@@ -1,0 +1,11 @@
+backend/
+├── middleware/
+│   └── verifyToken.js
+├── routes/
+│   ├── auth.js
+│   ├── interviews.js
+│   └── oa.js
+├── firebaseAdmin.js
+├── serviceAccountKey.json
+├── index.js
+└── uploads/ (for storing uploaded files/images if using local storage)

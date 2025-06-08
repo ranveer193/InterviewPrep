@@ -1,0 +1,11 @@
+src/
+├── components/
+│   ├── Navbar.jsx
+│   └── InterviewForm.jsx
+├── pages/
+│   ├── Home.jsx
+│   ├── Interviews.jsx
+│   └── OAQuestions.jsx
+├── firebase.js
+├── App.jsx
+└── main.jsx
