@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const connectDB = require("./config/db");
 
 const app = express();
 dotenv.config();
@@ -8,11 +9,13 @@ dotenv.config();
 app.use(cors());
 app.use(express.json());
 
-const authRoutes = require('./routes/auth');
-const interviewRoutes = require('./routes/interview');
-const oaRoutes = require('./routes/oa');
+connectDB();
 
-// app.use('/interview', interviewRoutes);
+// const authRoutes = require('./routes/auth');
+const interviewRoutes = require('./routes/interview');
+// const oaRoutes = require('./routes/oa');
+
+app.use('/interview', interviewRoutes);
 // app.use('/oa', oaRoutes);
 // app.use('/auth', authRoutes);
 

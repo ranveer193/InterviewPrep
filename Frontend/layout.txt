@@ -1,10 +1,14 @@
 src/
 ├── components/
+│   ├── HeroBanner.jsx
 │   ├── Navbar.jsx
 │   └── InterviewForm.jsx
 ├── pages/
 │   ├── Home.jsx
 │   ├── Interviews.jsx
+│   ├── SubmitExperience.jsx
+│   ├── AdminPanel.jsx
+│   ├── NotFound.jsx
 │   └── OAQuestions.jsx
 ├── firebase.js
 ├── App.jsx
