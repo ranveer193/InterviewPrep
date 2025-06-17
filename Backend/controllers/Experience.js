@@ -5,26 +5,53 @@ const getAll = async (req, res) => {
   res.json(data);
 };
 
+const upvoteExperience = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const experience = await Experience.findById(id);
+
+    if (!experience) {
+      return res.status(404).json({ error: "Experience not found" });
+    }
+
+    experience.upvotes += 1;
+    await experience.save();
+
+    res.json({ message: "Upvoted successfully", upvotes: experience.upvotes });
+  } catch (err) {
+    console.error("Error during upvote:", err);
+    res.status(500).json({ error: "Server error during upvote" });
+  }
+};
+
 const getAllApproved = async (req, res) => {
   try {
-    const { company, role } = req.query;
+    const { company, role, difficulty, sort } = req.query;
     const filter = { approved: true };
 
     if (company) {
-      filter.company = { $regex: new RegExp(`^${company}$`, "i") };
+      filter.company = { $regex: new RegExp(`^${company}$`, "i") }; // exact match, case-insensitive
     }
 
     if (role) {
-      filter.role = { $regex: role, $options: "i" }; 
+      filter.role = { $regex: role, $options: "i" }; // partial match, case-insensitive
     }
 
-    const data = await Experience.find(filter).sort({ createdAt: -1 });
+    if (difficulty) {
+      filter.difficulty = { $regex: difficulty, $options: "i" }; // partial match, case-insensitive
+    }
+
+    const sortOptions = {
+      latest: { createdAt: -1 },
+      upvotes: { upvotes: -1 },
+    };
+
+    const data = await Experience.find(filter).sort(sortOptions[sort] || { createdAt: -1 });
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
 };
-
 
 const submitExperience = async (req, res) => {
   const exp = new Experience(req.body);
@@ -51,4 +78,4 @@ const approveExperience = async (req, res) => {
   }
 };
 
-module.exports = {getAll, getAllApproved, submitExperience, approveExperience };
+module.exports = {getAll, getAllApproved, submitExperience, approveExperience,upvoteExperience };

@@ -6,6 +6,7 @@ const experienceSchema = new mongoose.Schema({
   role: String,
   difficulty: String,
   content: String,
+  upvotes: { type: Number, default: 0 },
   approved: { type: Boolean, default: false },
 }, { timestamps: true });
 
