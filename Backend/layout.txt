@@ -1,11 +1,25 @@
 backend/
-├── middleware/
-│   └── verifyToken.js
-├── routes/
-│   ├── auth.js
-│   ├── interviews.js
+├── controllers/                    # Business logic
+│   └── Experience.js
+│   └── OAQuestions.js
+│   └── auth.js
+│
+├── routes/                         # Route handlers
+│   └── interview.js
 │   └── oa.js
-├── firebaseAdmin.js
-├── serviceAccountKey.json
-├── index.js
-└── uploads/ (for storing uploaded files/images if using local storage)
+│   └── auth.js
+│
+├── models/                         # Mongoose models
+│   └── Experience.js
+│
+├── middleware/
+│
+├── config/
+│   └── db.js
+│
+├── uploads/                        # For OA PDFs/photos
+│
+├── .env                            # MongoDB URI, JWT secret  
+├── index.js                       # Start server + DB connection
+├── package.json
+└── .gitignore
