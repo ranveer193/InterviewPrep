@@ -15,16 +15,18 @@ export default function Navbar() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+      setUser(currentUser?? null);
     });
 
-    return () => unsubscribe(); // Cleanup
+    return () => unsubscribe(); 
   }, []);
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      toast.success("Logged out successfully");
+      toast.success("Logged out successfully", {
+        position: "top-center",
+        autoClose: 1500,});
       navigate("/");
     } catch (err) {
       toast.error("Logout failed. Try again.");
