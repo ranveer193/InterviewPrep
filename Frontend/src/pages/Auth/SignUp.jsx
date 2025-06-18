@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Input from "../../components/Inputs/Input"; // adjust path if needed
 import ProfilePhotoSelector from "../../components/Inputs/ProfilePhotoSelector"; // if you have it
 // import { validateEmail } from "../../utils/helper";
+import GoogleSigninButton from '../../components/SignInWithGoogle.jsx';
+
 const SignUp = ({ setCurrentPage }) => {
   const [profilePic, setProfilePic] = useState(null);
   const [fullName, setFullName] = useState("");
@@ -69,6 +71,19 @@ const SignUp = ({ setCurrentPage }) => {
             Log In
           </button>
         </p>
+
+        {/* Divider */}
+      <div className="flex items-center my-4">
+        <hr className="flex-grow border-gray-300" />
+        <span className="mx-2 text-sm text-gray-500">or continue with</span>
+        <hr className="flex-grow border-gray-300" />
+      </div>
+
+      {/* Google Sign-in */}
+      <div className="flex justify-center">
+        <GoogleSigninButton />
+      </div>
+
       </form>
     </div>
   );
