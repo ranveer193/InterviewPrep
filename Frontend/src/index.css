@@ -1,1 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
+
+:root {
+    --font-display: "Urbanist", sans-serif;
+    --breakpoint-3xl: 1920px;
+    --color-primary: #4F46E5; /* Tailwind indigo-600 */
+}
+
+@layer base {
+    html {
+        font-family: var(--font-display);
+    }
+    body {
+        background-color: #fcfbfc;
+        overflow-x: hidden;
+    }
+}
+
+/* custom scroll bar styling */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(79, 70, 229, 0.5); /* indigo-600 at 50% opacity */
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+@layer utilities {
+    @keyframes text-shine {
+        0% {
+            background-position: 0% 50%;
+        }
+        100% {
+            background-position: 100% 50%;
+        }
+    }
+    .animate-text-shine {
+        animation: text-shine 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes blob1 {
+        0%, 100% { transform: translate(0px, 0px) scale(1); }
+        33% { transform: translate(30px, -60px) scale(1.1); }
+        66% { transform: translate(-20px, 20px) scale(0.9); }
+    }
+    @keyframes blob2 {
+        0%, 100% { transform: translate(0px, 0px) scale(1); }
+        33% { transform: translate(-40px, 60px) scale(1.05); }
+        66% { transform: translate(20px, -40px) scale(0.95); }
+    }
+    @keyframes blob3 {
+        0%, 100% { transform: translate(0px, 0px) scale(1); }
+        33% { transform: translate(20px, 140px) scale(1.15); }
+        66% { transform: translate(-30px, -30px) scale(0.85); }
+    }
+    .animate-blob1 {
+        animation: blob1 8s ease-in-out infinite;
+    }
+    .animate-blob2 {
+        animation: blob2 10s ease-in-out infinite;
+    }
+    .animate-blob3 {
+        animation: blob3 12s ease-in-out infinite;
+    }
+}
+
+/* BLUE THEME COMPONENT STYLES */
+
+.input-box {
+    @apply w-full flex justify-between gap-3 text-sm text-black bg-indigo-50/50 rounded px-4 py-3 mb-4 mt-3 border border-indigo-100 outline-none focus-within:border-indigo-400;
+}
+
+.btn-primary {
+    @apply w-full flex items-center justify-center gap-3 text-sm font-medium text-white bg-indigo-700 p-2.5 rounded-md my-1 hover:bg-indigo-500 cursor-pointer transition-colors;
+}
+
+.btn-small {
+    @apply flex items-center justify-center gap-3 bg-gradient-to-r from-indigo-600 to-indigo-400 text-sm font-semibold text-white px-7 py-2 rounded-lg hover:bg-black hover:text-white transition-colors cursor-pointer hover:shadow-2xl hover:shadow-indigo-300;
+}
