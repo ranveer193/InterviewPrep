@@ -10,7 +10,6 @@ import ExperienceDetail from "./components/ExperienceDetail";
 import Interview from "./pages/Interview"; // ✅ Import the Interview page
 import CompanyDetail from "./pages/CompanyDetail"; // Import the CompanyDetail page
 
-
 function App() {
   return (
     <Router>
@@ -24,9 +23,7 @@ function App() {
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <Footer/>
-      
-
+      <Footer />
     </Router>
   );
 }
