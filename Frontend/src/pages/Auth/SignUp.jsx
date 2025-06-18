@@ -1,12 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "../../components/Inputs/Input"; // adjust path if needed
-import ProfilePhotoSelector from "../../components/Inputs/ProfilePhotoSelector"; // if you have it
-// import { validateEmail } from "../../utils/helper";
 import GoogleSigninButton from '../../components/SignInWithGoogle.jsx';
 
 const SignUp = ({ setCurrentPage }) => {
-  const [profilePic, setProfilePic] = useState(null);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,7 +12,6 @@ const SignUp = ({ setCurrentPage }) => {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-   
   };
 
   return (
@@ -26,8 +22,6 @@ const SignUp = ({ setCurrentPage }) => {
       </p>
 
       <form onSubmit={handleSignUp} >
-        {/* Optional: Profile picture upload */}
-        <ProfilePhotoSelector image={profilePic} setImage={setProfilePic} />
        <div className="grid grid-cols-1 md:grid-cols-1 gap-2">
         <Input
           value={fullName}
