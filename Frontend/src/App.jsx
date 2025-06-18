@@ -5,16 +5,16 @@ import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+
 import ExperienceDetail from "./components/ExperienceDetail";
+import Interview from "./pages/Interview"; // ✅ Import the Interview page
 import CompanyDetail from "./pages/CompanyDetail"; // Import the CompanyDetail page
-import Interview from "./pages/Interview";
 import { ToastContainer } from 'react-toastify';
 
 function App() {
   return (
     <Router>
       <Navbar />
-      <ToastContainer position="top-center" autoClose={2000} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/interview" element={<Interview />} /> {/* ✅ Static route first */}
