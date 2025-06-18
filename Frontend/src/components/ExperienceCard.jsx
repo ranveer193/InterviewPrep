@@ -15,7 +15,7 @@ export default function ExperienceCard({ exp }) {
     try {
       const res = await axios.patch(`http://localhost:5000/interview/${exp._id}/upvote`);
       setUpvotes(res.data.upvotes);
-      setIsUpvoted(true); 
+      setIsUpvoted(false); 
     } catch (err) {
       console.error("Failed to upvote", err);
     }
