@@ -6,19 +6,21 @@ import SignUp from "../pages/Auth/SignUp";
 import { auth } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { toast } from "react-toastify";
+import useAdminStatus from "../hooks/useAdminStatus";
 
 export default function Navbar() {
   const [openAuthModal, setOpenAuthModal] = useState(false);
   const [currentPage, setCurrentPage] = useState("login");
   const [user, setUser] = useState(null);
+  const { isAdmin, loading } = useAdminStatus(); // updated with loading
   const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser?? null);
+      setUser(currentUser ?? null);
     });
 
-    return () => unsubscribe(); 
+    return () => unsubscribe();
   }, []);
 
   const handleLogout = async () => {
@@ -26,7 +28,8 @@ export default function Navbar() {
       await signOut(auth);
       toast.success("Logged out successfully", {
         position: "top-center",
-        autoClose: 1500,});
+        autoClose: 1500,
+      });
       navigate("/");
     } catch (err) {
       toast.error("Logout failed. Try again.");
@@ -42,15 +45,19 @@ export default function Navbar() {
           <div className="flex space-x-4 items-center">
             <Link to="/interview" className="hover:text-blue-400">Experiences</Link>
             <Link to="/submit" className="hover:text-blue-400">Submit</Link>
-            <Link to="/admin" className="hover:text-blue-400">Admin</Link>
+
+            {/* Show admin link only after loading completes and user is admin */}
+            {!loading && isAdmin && (
+              <Link to="/admin" className="hover:text-blue-400">Admin</Link>
+            )}
 
             {user ? (
               <button
-              onClick={handleLogout}
-              className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-1.5 rounded"
-            >
-          Logout
-          </button>
+                onClick={handleLogout}
+                className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-1.5 rounded"
+              >
+                Logout
+              </button>
             ) : (
               <button
                 onClick={() => setOpenAuthModal(true)}
@@ -63,7 +70,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* ✅ Modal */}
+      {/* Auth Modal */}
       <Modal
         isOpen={openAuthModal}
         onClose={() => {

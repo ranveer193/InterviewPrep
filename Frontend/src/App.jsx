@@ -10,6 +10,7 @@ import ExperienceDetail from "./components/ExperienceDetail";
 import Interview from "./pages/Interview"; 
 import CompanyDetail from "./pages/CompanyDetail"; 
 import { ToastContainer } from 'react-toastify';
+import ProtectedAdminRoute from "./components/protectedAdminRoute";
 
 function App() {
   return (
@@ -22,7 +23,10 @@ function App() {
         <Route path="/interview/:id" element={<ExperienceDetail />} /> 
         <Route path="/company/:companyName" element={<CompanyDetail />} /> 
         <Route path="/submit" element={<SubmitExperience />} />
-        <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin" element={
+          <ProtectedAdminRoute>
+            <AdminPanel />
+          </ProtectedAdminRoute> } />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />
