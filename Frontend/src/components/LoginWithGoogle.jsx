@@ -1,4 +1,4 @@
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +14,18 @@ export default function GoogleSignInButton() {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
+      const email = result.user?.email;
+
+      if (!email.endsWith("@nitkkr.ac.in")) {
+        await signOut(auth);
+        toast.error("Only nitkkr.ac.in emails are allowed", {
+          position: "top-center",
+          autoClose: 2500,
+        });
+        setLoading(false);
+        return;
+      }
+
       if (result.user) {
         toast.success('Logged in successfully!', {
           position: 'top-center',
@@ -22,7 +34,7 @@ export default function GoogleSignInButton() {
 
         setTimeout(() => {
           window.location.href = '/';
-        }, 2120);
+        }, 1000);
       }
     } catch (error) {
       console.error('Google Sign-In error:', error);

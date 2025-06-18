@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import googleSignupImg from "../assets/google_signin.png";
 import { auth } from "../firebase";
 
-export default function GoogleSignUpButton({ setCurrentPage }) {
+export default function GoogleSignUpButton() {
   const [loading, setLoading] = useState(false);
 
   const handleGoogleSignup = async () => {
@@ -15,17 +15,26 @@ export default function GoogleSignUpButton({ setCurrentPage }) {
 
     try {
       const result = await signInWithPopup(auth, provider);
+      const email = result.user?.email;
 
-      if (result.user) {
-        toast.success("Signed up successfully!", {
+      if (!email.endsWith("@nitkkr.ac.in")) {
+        await signOut(auth);
+        toast.error("Only nitkkr.ac.in emails are allowed", {
           position: "top-center",
-          autoClose: 2000,
+          autoClose: 2500,
         });
-
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 2120);
+        setLoading(false);
+        return;
       }
+
+      toast.success("Signed up successfully!", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1000);
     } catch (error) {
       console.error("Error signing up with Google:", error);
       toast.error("Something went wrong. Please try again.", {
