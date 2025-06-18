@@ -8,6 +8,7 @@ import Footer from "./components/Footer";
 
 import ExperienceDetail from "./components/ExperienceDetail";
 import Interview from "./pages/Interview"; // ✅ Import the Interview page
+import CompanyDetail from "./pages/CompanyDetail"; // Import the CompanyDetail page
 
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/interview" element={<Interview />} /> {/* ✅ Static route first */}
         <Route path="/interview/:id" element={<ExperienceDetail />} /> {/* 👇 Dynamic route */}
+        <Route path="/company/:companyName" element={<CompanyDetail />} /> {/* Company detail route */}
         <Route path="/submit" element={<SubmitExperience />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="*" element={<NotFound />} />
