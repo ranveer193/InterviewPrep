@@ -4,7 +4,10 @@ import SubmitExperience from "./pages/SubmitExperience";
 import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+
 import ExperienceDetail from "./components/ExperienceDetail";
+
 
 function App() {
   return (
@@ -17,6 +20,9 @@ function App() {
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <Footer/>
+      
+
     </Router>
   );
 }
