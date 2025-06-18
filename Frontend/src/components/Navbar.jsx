@@ -15,11 +15,10 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
           <Link to="/" className="text-xl font-bold">InterviewPrep</Link>
           <div className="flex space-x-4 items-center">
-            <Link to="/" className="hover:text-blue-400">Experiences</Link>
+            <Link to="/interview" className="hover:text-blue-400">Experiences</Link>
             <Link to="/submit" className="hover:text-blue-400">Submit</Link>
             <Link to="/admin" className="hover:text-blue-400">Admin</Link>
 
-            {/* ✅ Login/Signup Button */}
             <button
               onClick={() => setOpenAuthModal(true)}
               className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-1.5 rounded"

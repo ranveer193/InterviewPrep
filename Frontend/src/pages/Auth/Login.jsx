@@ -1,60 +1,73 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "../../components/Inputs/Input.jsx";
 import { validateEmail } from "../../utils/helper";
 import GoogleLoginButton from '../../components/LoginWithGoogle.jsx';
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../firebase";
+import { toast } from "react-toastify";
+import { isAllowedEmail, allowedDomain } from "../../utils/allowedDomain";
 
 const Login = ({setCurrentPage}) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
-
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-     if(!validateEmail(email)){
-      setError("Please enter valid email");
-      return;
-    }
-    if(!password){
-      setError("Please enter the password");
-      return;
-    }
-    setError("");
+const handleEmailLogin = async (e) => {
+  e.preventDefault();
+  setError(null);
+  setLoading(true);
 
-    //Login API call
-    try {
-      
-    } catch (error) {
-       if(error.response && error.response.data.message){
-        setError(error.response.data.message);
-       }
-       else{
-        setError("Something went wrong. Please try again.")
-       }
-    }
-    // try {
-    //   // TODO: Replace with real login logic
-    //   console.log("Logging in with", { email, password });
+  if (!isAllowedEmail(email)) {
+    toast.error(`Only ${allowedDomain} accounts can log in`, { autoClose: 2500 });
+    setLoading(false);
+    return;
+  }
 
-    //   // Example: Navigate to dashboard or home page
-    //   navigate("/dashboard");
-    // } catch (err) {
-    //   setError("Login failed. Please check your credentials.");
-    // }
-  };
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+
+    toast.success("Logged in successfully!", {
+        position: "top-center",
+        autoClose: 2500,
+      });
+
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1300);
+  } catch (err) {
+    console.error("Login error:", err.code, err.message);
+    if (err.code === "auth/invalid-credential") {
+      setError("No account found. Please sign up.");
+      toast.error("Invalid Email id or Password", { autoClose: 2500 });
+    } 
+     else {
+      setError("Login failed. Try again.");
+      toast.error("Login error", { autoClose: 2500 });
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
 return (
-  <div className="w-[90vw] md:w-[33vw] p-7 flex flex-col justify-center items-center">
-    <h3 className="text-lg font-semibold text-black">Welcome Back</h3>
+  <div className="w-[90vw] md:w-[33vw] p-7 flex flex-col items-center">
+  {loading ? (
+  <div className="flex items-center justify-center gap-2 mt-4">
+    <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+    <p className="text-sm text-gray-600">Logging you in...</p>
+  </div>
+) : (
+  <>    <h3 className="text-lg font-semibold text-black">Log In</h3>
     <p className="text-xs text-slate-700 mt-[5px] mb-6">
-      Please enter your details to log in
+      Please enter your credentials to log in
     </p>
 
     {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
-    <form onSubmit={handleLogin} className="flex flex-col gap-4 w-full">
+    <form onSubmit={handleEmailLogin} className="flex flex-col gap-4 w-full">
       <Input
         label="Email Address"
         type="email"
@@ -102,10 +115,11 @@ return (
         <GoogleLoginButton />
       </div>
     </form>
+    </>
+)}
   </div>
-);
-};
-
+)
+}
 export default Login;
 
 
