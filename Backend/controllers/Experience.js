@@ -5,6 +5,20 @@ const getAll = async (req, res) => {
   res.json(data);
 };
 
+const getExperience = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const experience = await Experience.findById(id);
+    if (!experience) {
+      return res.status(404).json({ error: "Experience not found" });
+    }
+    res.json(experience);
+  } catch (err) {
+    console.error("Error during experience retrieval:", err);
+    res.status(500).json({ error: "Server error during experience retrieval" });
+  }
+};
+
 const upvoteExperience = async (req, res) => {
   try {
     const { id } = req.params;
@@ -78,4 +92,4 @@ const approveExperience = async (req, res) => {
   }
 };
 
-module.exports = {getAll, getAllApproved, submitExperience, approveExperience,upvoteExperience };
+module.exports = {getExperience,getAll, getAllApproved, submitExperience, approveExperience,upvoteExperience };

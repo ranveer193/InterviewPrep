@@ -31,14 +31,11 @@ export default function Home() {
   return (
     <div>
       <HeroBanner />
-      <div className="px-4 max-w-6xl mx-auto">
-        {/* Company & role search */}
+      <div className="px-4 max-w-6xl mx-auto"> 
         <SearchFilters setFilter={setFilter} />
 
-        {/* NEW difficulty pills */}
         <DifficultyFilter current={filter.difficulty} setFilter={setFilter} />
 
-        {/* Sort dropdown */}
         <div className="flex justify-end my-4">
           <select
             value={sortBy}
@@ -50,7 +47,6 @@ export default function Home() {
           </select>
         </div>
 
-        {/* Experience grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {experiences.length ? (
             experiences.map((exp) => <ExperienceCard key={exp._id} exp={exp} />)
