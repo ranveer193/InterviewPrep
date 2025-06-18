@@ -7,6 +7,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
 import ExperienceDetail from "./components/ExperienceDetail";
+import Interview from "./pages/Interview"; // ✅ Import the Interview page
 
 
 function App() {
@@ -15,7 +16,8 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/interview/:id" element={<ExperienceDetail />} />
+        <Route path="/interview" element={<Interview />} /> {/* ✅ Static route first */}
+        <Route path="/interview/:id" element={<ExperienceDetail />} /> {/* 👇 Dynamic route */}
         <Route path="/submit" element={<SubmitExperience />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="*" element={<NotFound />} />
