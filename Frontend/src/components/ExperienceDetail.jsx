@@ -59,7 +59,7 @@ export default function ExperienceDetail() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Back Button */}
         <Link 
-          to="/interview" 
+          to="/" 
           className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />

@@ -7,19 +7,20 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
 import ExperienceDetail from "./components/ExperienceDetail";
-import Interview from "./pages/Interview"; // ✅ Import the Interview page
-import CompanyDetail from "./pages/CompanyDetail"; // Import the CompanyDetail page
+import Interview from "./pages/Interview"; 
+import CompanyDetail from "./pages/CompanyDetail"; 
 import { ToastContainer } from 'react-toastify';
 
 function App() {
   return (
     <Router>
       <Navbar />
+      <ToastContainer/>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/interview" element={<Interview />} /> {/* ✅ Static route first */}
-        <Route path="/interview/:id" element={<ExperienceDetail />} /> {/* 👇 Dynamic route */}
-        <Route path="/company/:companyName" element={<CompanyDetail />} /> {/* Company detail route */}
+        <Route path="/interview" element={<Interview />} /> 
+        <Route path="/interview/:id" element={<ExperienceDetail />} /> 
+        <Route path="/company/:companyName" element={<CompanyDetail />} /> 
         <Route path="/submit" element={<SubmitExperience />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="*" element={<NotFound />} />

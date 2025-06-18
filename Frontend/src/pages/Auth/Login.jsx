@@ -41,11 +41,11 @@ const handleEmailLogin = async (e) => {
     console.error("Login error:", err.code, err.message);
     if (err.code === "auth/invalid-credential") {
       setError("No account found. Please sign up.");
-      toast.error("Invalid Email id or Password", { autoClose: 2500 });
+      toast.error("Invalid Email id or Password", { position: "top-center", autoClose: 2500 });
     } 
      else {
       setError("Login failed. Try again.");
-      toast.error("Login error", { autoClose: 2500 });
+      toast.error("Login error", { position : "top-center", autoClose: 2500 });
     }
   } finally {
     setLoading(false);
