@@ -9,6 +9,7 @@ import Footer from "./components/Footer";
 import ExperienceDetail from "./components/ExperienceDetail";
 import Interview from "./pages/Interview"; // ✅ Import the Interview page
 import CompanyDetail from "./pages/CompanyDetail"; // Import the CompanyDetail page
+import { ToastContainer } from 'react-toastify';
 
 function App() {
   return (
