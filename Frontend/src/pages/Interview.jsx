@@ -9,15 +9,22 @@ export default function Interview() {
   const [activeFilter, setActiveFilter] = useState("All Companies");
   const [sortBy, setSortBy] = useState("latest");
   const [searchText, setSearchText] = useState("");
+  const [page] = useState(1);
+  const [limit] = useState(1000); // Increase if necessary
 
   const fetchData = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/interview?sort=${sortBy}`);
-      const data = res.data;
-      setExperiences(data);
+      const params = new URLSearchParams({
+        sort: sortBy,
+        page,
+        limit,
+      }).toString();
 
-      const uniqueCompanies = [...new Set(data.map((item) => item.company.trim()))];
-      setCompanies(uniqueCompanies);
+      const res = await axios.get(`http://localhost:5000/interview?${params}`);
+      const rows = Array.isArray(res.data) ? res.data : res.data.data;
+
+      setExperiences(rows);
+      setCompanies([...new Set(rows.map((item) => item.company.trim()))]);
     } catch (error) {
       console.error("Error fetching experiences:", error);
     }
@@ -27,21 +34,20 @@ export default function Interview() {
     fetchData();
   }, [sortBy]);
 
-  // Group experiences by company and calculate stats
   const groupExperiencesByCompany = () => {
     const grouped = {};
-    
-    experiences.forEach(exp => {
+
+    experiences.forEach((exp) => {
       const company = exp.company.trim();
       if (!grouped[company]) {
         grouped[company] = {
           company,
           experiences: [],
           totalUpvotes: 0,
-          roles: new Set()
+          roles: new Set(),
         };
       }
-      
+
       grouped[company].experiences.push(exp);
       grouped[company].totalUpvotes += exp.upvotes || 0;
       if (exp.roleApplied || exp.role) {
@@ -49,20 +55,22 @@ export default function Interview() {
       }
     });
 
-    // Convert to array and calculate averages
-    return Object.values(grouped).map(companyData => ({
+    return Object.values(grouped).map((companyData) => ({
       ...companyData,
       experienceCount: companyData.experiences.length,
       averageUpvotes: companyData.totalUpvotes / companyData.experiences.length,
-      roles: Array.from(companyData.roles)
+      roles: Array.from(companyData.roles),
     }));
   };
 
   const companyData = groupExperiencesByCompany();
 
   const filteredCompanyData = companyData.filter((company) => {
-    const matchesCompany = activeFilter === "All Companies" || company.company === activeFilter;
-    const matchesSearch = company.company.toLowerCase().includes(searchText.toLowerCase());
+    const matchesCompany =
+      activeFilter === "All Companies" || company.company === activeFilter;
+    const matchesSearch = company.company
+      .toLowerCase()
+      .includes(searchText.toLowerCase());
 
     return matchesCompany && matchesSearch;
   });
@@ -90,8 +98,18 @@ export default function Interview() {
             className="w-full p-4 pl-12 rounded-full border border-blue-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white transition-all duration-200"
           />
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <svg
+              className="h-5 w-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
             </svg>
           </div>
         </div>
@@ -133,7 +151,9 @@ export default function Interview() {
               <CompanyCard key={company.company} companyData={company} />
             ))
           ) : (
-            <p className="text-center text-gray-500 col-span-full">No companies found.</p>
+            <p className="text-center text-gray-500 col-span-full">
+              No companies found.
+            </p>
           )}
         </div>
       </div>

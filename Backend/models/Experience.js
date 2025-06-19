@@ -4,7 +4,7 @@ const roundSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     duration: { type: String, trim: true },  
-    mode: { type: String, enum: ["Online", "Offline", "Hybrid"], trim: true },
+    mode: { type: String, enum: ["Online", "Offline"], trim: true },
     codingProblems: { type: Number, min: 0 },
     description: { type: String, trim: true },
   },
@@ -14,9 +14,12 @@ const roundSchema = new mongoose.Schema(
 const experienceSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
+ 
     email: {
       type: String,
-      required: true,
+      required: function () {
+      return !this.anonymous;
+      },
       trim: true,
       match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     },
@@ -38,6 +41,7 @@ const experienceSchema = new mongoose.Schema(
 
     content: { type: String, default: "", trim: true },
     upvotes: { type: Number, default: 0, index: -1 },
+    upvotedBy: [{ type: String }], 
     approved: { type: Boolean, default: false },
 
     mode: { type: String, enum: ["Online", "Offline"], trim: true },
@@ -53,6 +57,10 @@ const experienceSchema = new mongoose.Schema(
 
     preparationTips: { type: [String], default: [] },
     generalAdvice: { type: [String], default: [] },
+
+    anonymous: { type: Boolean, default: false },
+    submittedBy: { type: String, default: null }
+
   },
   { timestamps: true }
 );

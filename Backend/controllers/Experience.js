@@ -20,57 +20,103 @@ const getExperience = async (req, res) => {
 };
 
 const upvoteExperience = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const experience = await Experience.findById(id);
+  const { id } = req.params;
+  const userId = req.user?.uid; 
 
-    if (!experience) {
-      return res.status(404).json({ error: "Experience not found" });
+  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+  try {
+    const exp = await Experience.findById(id);
+    if (!exp) return res.status(404).json({ error: "Experience not found" });
+
+    exp.upvotedBy = exp.upvotedBy || [];
+    exp.upvotes   = exp.upvotes   || 0;
+
+    let upvoted;
+
+    if (exp.upvotedBy.includes(userId)) {
+      // ─── Un‑upvote (toggle off) ──────────────────────────
+      exp.upvotedBy = exp.upvotedBy.filter((uid) => uid !== userId);
+      exp.upvotes   = Math.max(exp.upvotes - 1, 0);
+      upvoted = false;
+    } else {
+      // ─── Add up‑vote (toggle on) ─────────────────────────
+      exp.upvotedBy.push(userId);
+      exp.upvotes += 1;
+      upvoted = true;
     }
 
-    experience.upvotes += 1;
-    await experience.save();
+    await exp.save();
 
-    res.json({ message: "Upvoted successfully", upvotes: experience.upvotes });
+    return res.json({
+      upvotes: exp.upvotes,
+      upvoted,  
+    });
   } catch (err) {
-    console.error("Error during upvote:", err);
-    res.status(500).json({ error: "Server error during upvote" });
+    console.error("Up‑vote error:", err);
+    return res.status(500).json({ error: "Server error" });
   }
 };
 
 const getAllApproved = async (req, res) => {
   try {
-    const { company, role, difficulty, sort } = req.query;
+    const { company, role, difficulty, sort = "latest", page = 1, limit = 12 } = req.query;
+
     const filter = { approved: true };
+    if (company) filter.company = { $regex: `^${company}$`, $options: "i" };
+    if (role)    filter.roleApplied = { $regex: role, $options: "i" };
+    if (difficulty) filter.difficulty = { $regex: difficulty, $options: "i" };
 
-    if (company) {
-      filter.company = { $regex: new RegExp(`^${company}$`, "i") }; // exact match, case-insensitive
-    }
+    const sortMap = { latest: { createdAt: -1 }, upvotes: { upvotes: -1 } };
 
-    if (role) {
-      filter.role = { $regex: role, $options: "i" }; // partial match, case-insensitive
-    }
+    const safeLimit = Math.min(Number(limit) || 12, 50);
+    const skip = (Math.max(Number(page), 1) - 1) * safeLimit;
 
-    if (difficulty) {
-      filter.difficulty = { $regex: difficulty, $options: "i" }; // partial match, case-insensitive
-    }
+    const [data, totalDocs] = await Promise.all([
+      Experience.find(filter).sort(sortMap[sort] || sortMap.latest).skip(skip).limit(safeLimit),
+      Experience.countDocuments(filter),
+    ]);
 
-    const sortOptions = {
-      latest: { createdAt: -1 },
-      upvotes: { upvotes: -1 },
-    };
-
-    const data = await Experience.find(filter).sort(sortOptions[sort] || { createdAt: -1 });
-    res.json(data);
+    res.json({
+      data,
+      page: Number(page),
+      limit: safeLimit,
+      totalPages: Math.ceil(totalDocs / safeLimit),
+      totalDocs,
+    });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 };
 
 const submitExperience = async (req, res) => {
-  const exp = new Experience(req.body);
-  await exp.save();
-  res.status(201).json({ message: "Submitted for review" });
+  try {
+    const { anonymous, ...data } = req.body;
+
+    // If anonymous, strip personally identifying fields
+    if (anonymous) {
+      data.name = "Anonymous";
+      data.email = undefined;
+      data.linkedin = undefined;
+    }
+
+    // Add user UID if authenticated and not anonymous
+    if (!anonymous && req.user?.uid) {
+      data.submittedBy = req.user.uid;
+    }
+
+    const newExp = new Experience({
+      ...data,
+      anonymous: !!anonymous,
+    });
+
+    await newExp.save();
+    res.status(201).json({ message: "Submitted for review" });
+  } catch (err) {
+    console.error("Submission error:", err);
+    res.status(500).json({ error: "Server error during submission" });
+  }
 };
 
 const approveExperience = async (req, res) => {

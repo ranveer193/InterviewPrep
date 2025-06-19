@@ -82,3 +82,28 @@
 .btn-small {
     @apply flex items-center justify-center gap-3 bg-gradient-to-r from-indigo-600 to-indigo-400 text-sm font-semibold text-white px-7 py-2 rounded-lg hover:bg-black hover:text-white transition-colors cursor-pointer hover:shadow-2xl hover:shadow-indigo-300;
 }
+
+@layer utilities {
+  @keyframes fadeInUp {
+    0%   { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0);    }
+  }
+  .animate-fadeInUp {
+    animation: fadeInUp 0.3s ease-out both;
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.3s ease-out;
+}

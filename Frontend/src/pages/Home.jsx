@@ -9,8 +9,9 @@ export default function Home() {
   const [experiences, setExperiences] = useState([]);
   const [filter, setFilter] = useState({ company: "", role: "", difficulty: "" });
   const [sortBy, setSortBy] = useState("latest");
-
-  
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const fetchExperiences = async () => {
@@ -19,23 +20,27 @@ export default function Home() {
       if (filter.role) params.append("role", filter.role);
       if (filter.difficulty) params.append("difficulty", filter.difficulty);
       params.append("sort", sortBy);
+      params.append("page", page);
+      params.append("limit", pageSize);
 
       try {
         const res = await axios.get(`http://localhost:5000/interview?${params.toString()}`);
-        setExperiences(res.data);
+        setExperiences(res.data.data);
+        setTotalPages(res.data.totalPages);
       } catch (err) {
         console.error("Failed to fetch experiences", err);
       }
     };
     fetchExperiences();
-  }, [filter, sortBy]);
-    
-  
+  }, [filter, sortBy, page, pageSize]);
+
+  const handlePrev = () => setPage((p) => Math.max(p - 1, 1));
+  const handleNext = () => setPage((p) => Math.min(p + 1, totalPages));
 
   return (
     <div>
       <HeroBanner />
-      <div className="px-4 max-w-6xl mx-auto"> 
+      <div className="px-4 max-w-6xl mx-auto">
         <SearchFilters setFilter={setFilter} />
 
         <DifficultyFilter current={filter.difficulty} setFilter={setFilter} />
@@ -57,6 +62,55 @@ export default function Home() {
           ) : (
             <p className="text-center text-gray-500 col-span-full">No experiences found.</p>
           )}
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-8">
+          <div>
+            <label className="mr-2 font-medium">Entries per page:</label>
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPage(1);
+              }}
+              className="border border-gray-300 rounded px-2 py-1"
+            >
+              {[3, 6, 9, 12].map((num) => (
+                <option key={num} value={num}>{num}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handlePrev}
+              disabled={page === 1}
+              className="px-3 py-1 rounded border bg-white disabled:opacity-50"
+            >
+              Prev
+            </button>
+
+            {[...Array(totalPages)].map((_, idx) => (
+              <button
+                key={idx + 1}
+                onClick={() => setPage(idx + 1)}
+                className={`px-3 py-1 rounded border ${
+                  page === idx + 1 ? "bg-blue-500 text-white" : "bg-white"
+                }`}
+              >
+                {idx + 1}
+              </button>
+            ))}
+
+            <button
+              onClick={handleNext}
+              disabled={page === totalPages}
+              className="px-3 py-1 rounded border bg-white disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
     </div>

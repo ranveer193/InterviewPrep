@@ -8,13 +8,19 @@ export default function useAdminStatus() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const token = await getIdTokenResult(user, true);
-        setIsAdmin(!!token.claims.admin);
-      } else {
+      try {
+        if (user) {
+          const tokenResult = await getIdTokenResult(user, true); // force refresh
+          setIsAdmin(!!tokenResult.claims.admin);
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (err) {
+        console.error("Failed to fetch admin claims", err);
         setIsAdmin(false);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
