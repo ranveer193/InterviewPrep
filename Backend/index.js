@@ -13,10 +13,10 @@ connectDB();
 
 // const authRoutes = require('./routes/auth');
 const interviewRoutes = require('./routes/interview');
-// const oaRoutes = require('./routes/oa');
+const oaRoutes = require('./routes/oa');
 
 app.use('/interview', interviewRoutes);
-// app.use('/oa', oaRoutes);
+app.use('/oa', oaRoutes);
 // app.use('/auth', authRoutes);
 
 app.get('/',(req,res) => {
