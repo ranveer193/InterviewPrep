@@ -104,28 +104,12 @@ export default function Navbar() {
             </Link>
 
             {!isSubmitPage && !isAdminPage && (
-              <>
-                <button
-                  onClick={() => {
-                    if (user) setShowPreferenceModal(true);
-                    else openAuth("login"); // prompt login first
-                  }}
-                  className="hover:text-blue-400"
-                >
-                  Share Experience
-                </button>
-                <Link
-                  to="/submit-oa?anon=true"
-                  className="hover:text-blue-400 px-3 py-1 rounded transition-colors duration-200"
-                >
-                  Submit OA Question
-                </Link>
-              </>
               <button
-                className={linkBase + " text-left"}
-                onClick={() =>
-                  user ? setShowPreferenceModal(true) : openAuth("login")
-                }
+                onClick={() => {
+                  if (user) setShowPreferenceModal(true);
+                  else openAuth("login"); // prompt login first
+                }}
+                className="hover:text-blue-400"
               >
                 Share Experience
               </button>

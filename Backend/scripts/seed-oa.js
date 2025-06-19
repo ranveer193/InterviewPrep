@@ -25,4 +25,17 @@ const run = async () => {
   }
 };
 
-run();
+const run1 = async () => {
+  try {
+    await mongoose.connect(MONGO_URI);
+    console.log("✅ Connected to MongoDB");
+    await OAQuestion.updateMany(
+      { detail: { $exists: true } },
+      { $rename: { "detail": "explanation" } }
+    );
+  } catch (err) {
+    console.error("❌ Error renaming field:", err);    
+  }
+};
+
+run1();

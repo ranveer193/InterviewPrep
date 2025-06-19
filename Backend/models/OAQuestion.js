@@ -10,7 +10,11 @@ const oaQuestionSchema = new mongoose.Schema(
       required: true,
     },
     question: { type: String, required: true },
-    detail:   { type: String, required: true },
+    explanation: {
+      type: String,
+      required: false,
+      default: "", // optional
+    },
   },
   { timestamps: true }
 );

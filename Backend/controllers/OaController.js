@@ -27,11 +27,26 @@ const getQuestionsByCompany = async (req, res) => {
   }
 };
 
-/* POST /oa  (admin / seed) */
-const createQuestion = async (req, res) => {
+/* POST /api/oa/bulk  – one form submits multiple questions at once */
+const bulkCreate = async (req, res) => {
   try {
-    const newQ = await OAQuestion.create(req.body);
-    res.status(201).json(newQ);
+    const { company, role, year, questions } = req.body;
+    if (!company || !role || !year || !Array.isArray(questions) || !questions.length) {
+      return res.status(400).json({ message: "Invalid payload." });
+    }
+
+    const docs = questions.map((q) => ({
+      company,
+      role,
+      year,
+      question:    q.question,
+      options:     q.options?.filter(Boolean), // strip empty strings
+      answer:      q.answer,
+      explanation: q.explanation,
+    }));
+
+    const created = await OAQuestion.insertMany(docs);
+    res.status(201).json({ inserted: created.length });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -40,5 +55,5 @@ const createQuestion = async (req, res) => {
 module.exports = {
   getCompanies,
   getQuestionsByCompany,
-  createQuestion,
+  bulkCreate,
 };
