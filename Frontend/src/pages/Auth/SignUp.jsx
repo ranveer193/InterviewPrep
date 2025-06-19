@@ -19,7 +19,7 @@ const SignUp = ({ setCurrentPage }) => {
     setLoading(true);
 
     if (!isAllowedEmail(email)) {
-      toast.error(`Only ${allowedDomain} emails are allowed`, { autoClose: 2500 });
+      toast.error(`Only ${allowedDomain} emails are allowed`, { position: "top-center", autoClose: 2500 });
       setLoading(false);
       return;
     }
@@ -42,11 +42,11 @@ const SignUp = ({ setCurrentPage }) => {
     } catch (err) {
       console.log(err.code, err.message);
       if (err.code === "auth/email-already-in-use") {
-        toast.error("Email already registered. Try logging in.", { autoClose: 2500 });
+        toast.error("Email already registered. Try logging in.", {position: "top-center", autoClose: 2500 });
       } else if (err.code === "auth/weak-password") {
-        toast.error("Password should be at least 6 characters.", { autoClose: 2500 });
+        toast.error("Password should be at least 6 characters.", { position: "top-center", autoClose: 2500 });
       } else {
-        toast.error("Signup failed. Try again.", { autoClose: 2500 });
+        toast.error("Signup failed. Try again.", { position: "top-center", autoClose: 2500 });
       }
     } finally {
       setLoading(false);
