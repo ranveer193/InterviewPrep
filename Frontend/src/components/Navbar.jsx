@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Modal from "./Modal";
 import Login from "../pages/Auth/Login";
 import SignUp from "../pages/Auth/SignUp";
+import PostPreferenceForm from "./PostPreferenceModal";
 import { auth } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { toast } from "react-toastify";
@@ -12,8 +13,10 @@ export default function Navbar() {
   const [openAuthModal, setOpenAuthModal] = useState(false);
   const [currentPage, setCurrentPage] = useState("login");
   const [user, setUser] = useState(null);
-  const { isAdmin, loading } = useAdminStatus(); // updated with loading
+  const { isAdmin, loading } = useAdminStatus();
+  const [showPreferenceModal, setShowPreferenceModal] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation(); // 👈 get current route
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -36,6 +39,15 @@ export default function Navbar() {
     }
   };
 
+  const handlePostConfirm = (anonymous) => {
+    setShowPreferenceModal(false);
+    navigate(`/submit?anon=${anonymous}`);
+  };
+
+  // 👇 hide button if already on submit page
+  const isSubmitPage = location.pathname === "/submit";
+  const isAdminPage = location.pathname.startsWith("/admin");
+
   return (
     <>
       <nav className="bg-gray-900 text-white shadow">
@@ -44,9 +56,17 @@ export default function Navbar() {
 
           <div className="flex space-x-4 items-center">
             <Link to="/interview" className="hover:text-blue-400">Experiences</Link>
-            <Link to="/submit" className="hover:text-blue-400">Submit</Link>
 
-            {/* Show admin link only after loading completes and user is admin */}
+            {/* 👇 Hide this if already on /submit page */}
+            {!isSubmitPage && !isAdminPage && (
+              <button
+                onClick={() => setShowPreferenceModal(true)}
+                className="hover:text-blue-400"
+              >
+                Share Experience
+              </button>
+            )}
+
             {!loading && isAdmin && (
               <Link to="/admin" className="hover:text-blue-400">Admin</Link>
             )}
@@ -81,6 +101,15 @@ export default function Navbar() {
       >
         {currentPage === "login" && <Login setCurrentPage={setCurrentPage} />}
         {currentPage === "signup" && <SignUp setCurrentPage={setCurrentPage} />}
+      </Modal>
+
+      {/* Post Preference Modal */}
+      <Modal
+        isOpen={showPreferenceModal}
+        onClose={() => setShowPreferenceModal(false)}
+        hideHeader
+      >
+        <PostPreferenceForm onConfirm={handlePostConfirm} />
       </Modal>
     </>
   );

@@ -1,24 +1,54 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { getAuth } from "firebase/auth";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AdminApproval = () => {
   const [experiences, setExperiences] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchPending = async () => {
     try {
-      axios.get("http://localhost:5000/interview/all") 
-      .then(res => setExperiences(res.data.filter(exp => !exp.approved)));
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+
+      const res = await axios.get("http://localhost:5000/interview/all", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const pending = res.data.filter((exp) => !exp.approved);
+      setExperiences(pending);
     } catch (err) {
       console.error("Failed to fetch pending experiences", err);
+      toast.error("Failed to load pending experiences.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleAction = async (id, action) => {
     try {
-      await axios.patch(`http://localhost:5000/interview/${id}/${action}`);
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+
+      await axios.patch(
+        `http://localhost:5000/interview/${id}/${action}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       setExperiences((prev) => prev.filter((item) => item._id !== id));
+      toast.success(`Experience ${action}ed successfully!`,{position:"top-center",autoClose:1500});
     } catch (err) {
       console.error(`Failed to ${action} experience`, err);
+      toast.error(`Failed to ${action} experience.`,{position:"top-center",autoClose:1500});
     }
   };
 
@@ -30,7 +60,9 @@ const AdminApproval = () => {
     <div className="max-w-5xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">🛠️ Pending Interview Approvals</h1>
 
-      {experiences.length === 0 ? (
+      {loading ? (
+        <p className="text-gray-500">Loading...</p>
+      ) : experiences.length === 0 ? (
         <p className="text-gray-500">No pending experiences.</p>
       ) : (
         <div className="space-y-4">

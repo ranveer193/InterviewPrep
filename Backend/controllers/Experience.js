@@ -68,9 +68,32 @@ const getAllApproved = async (req, res) => {
 };
 
 const submitExperience = async (req, res) => {
-  const exp = new Experience(req.body);
-  await exp.save();
-  res.status(201).json({ message: "Submitted for review" });
+  try {
+    const { anonymous, ...data } = req.body;
+
+    // If anonymous, strip personally identifying fields
+    if (anonymous) {
+      data.name = "Anonymous";
+      data.email = undefined;
+      data.linkedin = undefined;
+    }
+
+    // Add user UID if authenticated and not anonymous
+    if (!anonymous && req.user?.uid) {
+      data.submittedBy = req.user.uid;
+    }
+
+    const newExp = new Experience({
+      ...data,
+      anonymous: !!anonymous,
+    });
+
+    await newExp.save();
+    res.status(201).json({ message: "Submitted for review" });
+  } catch (err) {
+    console.error("Submission error:", err);
+    res.status(500).json({ error: "Server error during submission" });
+  }
 };
 
 const approveExperience = async (req, res) => {

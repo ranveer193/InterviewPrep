@@ -1,7 +1,7 @@
 const admin = require("./firebase-admin");
 require("dotenv").config();
 
-const uid = "user_uid"; // Replace with the actual user UID
+const uid = "user_uid"; 
 
 admin
   .auth()

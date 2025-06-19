@@ -1,4 +1,3 @@
-// middleware/verifyAdmin.js
 const admin = require("../firebase-admin");
 
 const verifyAdmin = async (req, res, next) => {
