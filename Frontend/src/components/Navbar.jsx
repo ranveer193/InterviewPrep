@@ -70,6 +70,10 @@ export default function Navbar() {
               Experiences
             </Link>
 
+          <Link to="/oa" className="hover:text-blue-400">
+              OA PYQs
+          </Link>
+          
             {!isSubmitPage && !isAdminPage && (
               <button
                 onClick={() => {
