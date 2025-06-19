@@ -1,68 +1,59 @@
-import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { auth } from '../firebase';
-import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
-import googleLogin from '../assets/google_login.png';
-import { useState } from 'react';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { auth } from "../firebase";
+import { toast } from "react-toastify";
+import googleLogin from "../assets/google_login.png";
 
-export default function GoogleSignInButton() {
+export default function GoogleSignInButton({ onSuccess }) {
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
-    setIsLoading(true);
+    setLoading(true);
     const provider = new GoogleAuthProvider();
+
     try {
       const result = await signInWithPopup(auth, provider);
-      const email = result.user?.email;
+      const email  = result.user?.email || "";
 
       if (!email.endsWith("@nitkkr.ac.in")) {
         await signOut(auth);
-        toast.error("Only nitkkr.ac.in emails are allowed", {
-          position: "top-center",
-          autoClose: 2500,
-        });
+        toast.error("Only nitkkr.ac.in emails are allowed", { autoClose: 2500 });
         setLoading(false);
         return;
       }
 
-      if (result.user) {
-        toast.success('Logged in successfully!', {
-          position: 'top-center',
-          autoClose: 2000,
-        });
+      toast.success("Logged in successfully!", { autoClose: 2000 });
 
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1000);
-      }
-    } catch (error) {
-      console.error('Google Sign-In error:', error);
-      toast.error('Something went wrong. Try again!', {
-        position: 'top-center',
-        autoClose: 2000,
-      });
-      setIsLoading(false);
+      // ⬇️ Tell parent or navigate
+      if (onSuccess) onSuccess();
+      else navigate("/");
+
+    } catch (err) {
+      console.error("Google Sign‑In error:", err);
+      toast.error("Something went wrong. Try again!", { autoClose: 2000 });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="w-full flex flex-col items-center">
-      <div
+      <button
         onClick={handleGoogleLogin}
-        className={`w-[200px] h-[50px] flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-200 ${
-          isLoading ? 'opacity-50 pointer-events-none' : ''
+        disabled={loading}
+        className={`w-[200px] h-[50px] flex items-center justify-center hover:scale-105 transition-transform duration-200 ${
+          loading ? "opacity-50 cursor-not-allowed" : ""
         }`}
       >
-        <img
-          src={googleLogin}
-          alt="Sign in with Google"
-          className="h-full w-auto"
-        />
-      </div>
+        <img src={googleLogin} alt="Sign in with Google" className="h-full" />
+      </button>
 
-      {isLoading && (
-        <p className="mt-4 text-sm text-slate-600 animate-pulse">Logging you in...</p>
+      {loading && (
+        <p className="mt-4 text-sm text-slate-600 animate-pulse">
+          Logging you in…
+        </p>
       )}
     </div>
   );

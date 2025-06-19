@@ -14,27 +14,26 @@ export default function Navbar() {
   const [currentPage, setCurrentPage] = useState("login");
   const [user, setUser] = useState(null);
   const { isAdmin, loading } = useAdminStatus();
+
   const [showPreferenceModal, setShowPreferenceModal] = useState(false);
+
+  const [redirectAfterAuth, setRedirectAfterAuth] = useState("/"); // 👈 new
   const navigate = useNavigate();
-  const location = useLocation(); // 👈 get current route
+  const location = useLocation();
 
+  /* ═════════ Track auth state ═════════ */
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser ?? null);
-    });
-
+    const unsubscribe = onAuthStateChanged(auth, (cur) => setUser(cur ?? null));
     return () => unsubscribe();
   }, []);
 
+  /* ═════════ Helpers ═════════ */
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      toast.success("Logged out successfully", {
-        position: "top-center",
-        autoClose: 1500,
-      });
-      navigate("/");
-    } catch (err) {
+      toast.success("Logged out successfully", { autoClose: 1500 });
+      navigate(location.pathname);           // stay on same page
+    } catch {
       toast.error("Logout failed. Try again.");
     }
   };
@@ -44,7 +43,17 @@ export default function Navbar() {
     navigate(`/submit?anon=${anonymous}`);
   };
 
-  // 👇 hide button if already on submit page
+  const openAuth = (initialPage = "login") => {
+    setRedirectAfterAuth(location.pathname + location.search); // save where we are
+    setCurrentPage(initialPage);
+    setOpenAuthModal(true);
+  };
+
+  const handleAuthSuccess = () => {
+    setOpenAuthModal(false);
+  };
+
+  /* ═════════ Hide buttons on certain routes ═════════ */
   const isSubmitPage = location.pathname === "/submit";
   const isAdminPage = location.pathname.startsWith("/admin");
 
@@ -52,15 +61,21 @@ export default function Navbar() {
     <>
       <nav className="bg-gray-900 text-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-          <Link to="/" className="text-xl font-bold">InterviewPrep</Link>
+          <Link to="/" className="text-xl font-bold">
+            InterviewPrep
+          </Link>
 
           <div className="flex space-x-4 items-center">
-            <Link to="/interview" className="hover:text-blue-400">Experiences</Link>
+            <Link to="/interview" className="hover:text-blue-400">
+              Experiences
+            </Link>
 
-            {/* 👇 Hide this if already on /submit page */}
             {!isSubmitPage && !isAdminPage && (
               <button
-                onClick={() => setShowPreferenceModal(true)}
+                onClick={() => {
+                  if (user) setShowPreferenceModal(true);
+                  else openAuth("login"); // prompt login first
+                }}
                 className="hover:text-blue-400"
               >
                 Share Experience
@@ -68,7 +83,9 @@ export default function Navbar() {
             )}
 
             {!loading && isAdmin && (
-              <Link to="/admin" className="hover:text-blue-400">Admin</Link>
+              <Link to="/admin" className="hover:text-blue-400">
+                Admin
+              </Link>
             )}
 
             {user ? (
@@ -80,17 +97,17 @@ export default function Navbar() {
               </button>
             ) : (
               <button
-                onClick={() => setOpenAuthModal(true)}
+                onClick={() => openAuth("login")}
                 className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-1.5 rounded"
               >
-                Login / Sign Up
+                Login / Sign Up
               </button>
             )}
           </div>
         </div>
       </nav>
 
-      {/* Auth Modal */}
+      {/* ───── Auth Modal ───── */}
       <Modal
         isOpen={openAuthModal}
         onClose={() => {
@@ -99,11 +116,21 @@ export default function Navbar() {
         }}
         hideHeader
       >
-        {currentPage === "login" && <Login setCurrentPage={setCurrentPage} />}
-        {currentPage === "signup" && <SignUp setCurrentPage={setCurrentPage} />}
+        {currentPage === "login" && (
+          <Login
+            setCurrentPage={setCurrentPage}
+            onSuccess={handleAuthSuccess}   // 👈 callback
+          />
+        )}
+        {currentPage === "signup" && (
+          <SignUp
+            setCurrentPage={setCurrentPage}
+            onSuccess={handleAuthSuccess}   // 👈 callback
+          />
+        )}
       </Modal>
 
-      {/* Post Preference Modal */}
+      {/* ───── Post Preference Modal ───── */}
       <Modal
         isOpen={showPreferenceModal}
         onClose={() => setShowPreferenceModal(false)}
