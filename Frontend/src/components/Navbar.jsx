@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { FaBars, FaTimes, FaUserCircle } from "react-icons/fa";
 import Modal from "./Modal";
 import Login from "../pages/Auth/Login";
 import SignUp from "../pages/Auth/SignUp";
@@ -8,28 +9,29 @@ import { auth } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { toast } from "react-toastify";
 import useAdminStatus from "../hooks/useAdminStatus";
-import { FaUserCircle } from "react-icons/fa"; // user icon
 
 export default function Navbar() {
   const [openAuthModal, setOpenAuthModal] = useState(false);
   const [currentPage, setCurrentPage] = useState("login");
   const [user, setUser] = useState(null);
+  const [showPreferenceModal, setShowPreferenceModal] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isAdmin, loading } = useAdminStatus();
 
-  const [showPreferenceModal, setShowPreferenceModal] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  /* Track auth state */
+  /* track firebase user */
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (cur) => setUser(cur ?? null));
-    return () => unsubscribe();
+    const unsub = onAuthStateChanged(auth, (cur) => setUser(cur ?? null));
+    return () => unsub();
   }, []);
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
       toast.success("Logged out successfully", { autoClose: 1500 });
+      setIsMenuOpen(false);
       navigate(location.pathname);
     } catch {
       toast.error("Logout failed. Try again.");
@@ -41,15 +43,18 @@ export default function Navbar() {
     navigate(`/submit?anon=${anonymous}`);
   };
 
-  const openAuth = (initialPage = "login") => {
-    setCurrentPage(initialPage);
+  const openAuth = (which = "login") => {
+    setCurrentPage(which);
     setOpenAuthModal(true);
+    setIsMenuOpen(false);
   };
 
-  const handleAuthSuccess = () => setOpenAuthModal(false);
-
   const isSubmitPage = location.pathname === "/submit";
-  const isAdminPage = location.pathname.startsWith("/admin");
+  const isAdminPage  = location.pathname.startsWith("/admin");
+
+  /* shared link / button styling */
+  const linkBase =
+    "hover:text-blue-400 transition-colors whitespace-nowrap";
 
   return (
     <>
@@ -59,27 +64,65 @@ export default function Navbar() {
             InterviewPrep
           </Link>
 
-          <div className="flex space-x-4 items-center">
-            <Link to="/" className="hover:text-blue-400">Home</Link>
-            <Link to="/interview" className="hover:text-blue-400">Experiences</Link>
-            <Link to="/interview/company-wise" className="hover:text-blue-400">Company-wise</Link>
+          {/* mobile hamburger */}
+          <button
+            className="text-white md:hidden"
+            onClick={() => setIsMenuOpen((p) => !p)}
+          >
+            {isMenuOpen ? <FaTimes size={22} /> : <FaBars size={22} />}
+          </button>
+
+          {/* Menu container */}
+          <div
+            className={`${
+              isMenuOpen ? "flex" : "hidden"
+            } md:flex flex-col md:flex-row md:items-center gap-3 md:gap-4 absolute md:static left-0 top-16 md:top-0 w-full md:w-auto bg-gray-900 md:bg-transparent px-4 py-3 md:p-0 z-50`}
+          >
+            <Link to="/" className={linkBase} onClick={() => setIsMenuOpen(false)}>
+              Home
+            </Link>
+
+            <Link
+              to="/interview"
+              className={linkBase}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Experiences
+            </Link>
+
+            <Link
+              to="/interview/company-wise"
+              className={linkBase}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Company‑wise
+            </Link>
 
             {!isSubmitPage && !isAdminPage && (
               <button
-                onClick={() => (user ? setShowPreferenceModal(true) : openAuth("login"))}
-                className="hover:text-blue-400"
+                className={linkBase + " text-left"}
+                onClick={() =>
+                  user ? setShowPreferenceModal(true) : openAuth("login")
+                }
               >
                 Share Experience
               </button>
             )}
 
             {!loading && isAdmin && (
-              <Link to="/admin" className="hover:text-blue-400">Admin</Link>
+              <Link
+                to="/admin"
+                className={linkBase}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Admin
+              </Link>
             )}
 
+            {/* Auth section */}
             {user ? (
               <>
-                {/* Logout first, then user icon / name */}
+                {/* logout first (keeps order), then avatar/name */}
                 <button
                   onClick={handleLogout}
                   className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-1.5 rounded"
@@ -87,9 +130,9 @@ export default function Navbar() {
                   Logout
                 </button>
 
-                <span className="flex items-center gap-2 text-sm font-medium text-blue-300">
+                <span className="flex items-center gap-1 text-sm font-medium text-blue-300">
                   <FaUserCircle className="text-lg" />
-                  {user.displayName?.split(' ')[0] || 'User'}
+                  {(user.displayName || user.email).split(" ")[0] || "User"}
                 </span>
               </>
             ) : (
@@ -114,13 +157,13 @@ export default function Navbar() {
         hideHeader
       >
         {currentPage === "login" ? (
-          <Login setCurrentPage={setCurrentPage} onSuccess={handleAuthSuccess} />
+          <Login setCurrentPage={setCurrentPage} onSuccess={() => setOpenAuthModal(false)} />
         ) : (
-          <SignUp setCurrentPage={setCurrentPage} onSuccess={handleAuthSuccess} />
+          <SignUp setCurrentPage={setCurrentPage} onSuccess={() => setOpenAuthModal(false)} />
         )}
       </Modal>
 
-      {/* Post Preference Modal */}
+      {/* Post‑preference modal */}
       <Modal
         isOpen={showPreferenceModal}
         onClose={() => setShowPreferenceModal(false)}
