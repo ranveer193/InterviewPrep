@@ -1,118 +1,168 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
-import HeroBanner from "../components/HeroBanner";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { getAuth } from "firebase/auth";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import ExperienceCard from "../components/ExperienceCard";
-import SearchFilters from "../components/FilterTabs";
-import DifficultyFilter from "../components/DifficultyFilter";
+import axios from "axios";
+import heroImg from "../assets/hero-img.png";
+import howItWorksVideo from "../assets/hero-video.mp4";
+import Modal from "../components/Modal";
+import Login from "../pages/Auth/Login";
+import SignUp from "../pages/Auth/SignUp";
 
 export default function Home() {
   const [experiences, setExperiences] = useState([]);
-  const [filter, setFilter] = useState({ company: "", role: "", difficulty: "" });
-  const [sortBy, setSortBy] = useState("latest");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(6);
-  const [totalPages, setTotalPages] = useState(1);
+  const [openAuthModal, setOpenAuthModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState("login");
 
   useEffect(() => {
     const fetchExperiences = async () => {
-      const params = new URLSearchParams();
-      if (filter.company) params.append("company", filter.company);
-      if (filter.role) params.append("role", filter.role);
-      if (filter.difficulty) params.append("difficulty", filter.difficulty);
-      params.append("sort", sortBy);
-      params.append("page", page);
-      params.append("limit", pageSize);
-
       try {
-        const res = await axios.get(`http://localhost:5000/interview?${params.toString()}`);
-        setExperiences(res.data.data);
-        setTotalPages(res.data.totalPages);
+        const res = await axios.get("http://localhost:5000/interview?limit=3&sort=latest");
+        setExperiences(res.data.data || res.data.slice?.(0, 3) || []);
       } catch (err) {
-        console.error("Failed to fetch experiences", err);
+        console.error("Error fetching experiences", err);
       }
     };
     fetchExperiences();
-  }, [filter, sortBy, page, pageSize]);
+  }, []);
 
-  const handlePrev = () => setPage((p) => Math.max(p - 1, 1));
-  const handleNext = () => setPage((p) => Math.min(p + 1, totalPages));
+  const handleGetStarted = () => {
+    const user = getAuth().currentUser;
+    if (user) {
+      toast.info("You're already logged in ✨", {autoClose: 2000});
+    } else {
+      setOpenAuthModal(true);
+    }
+  };
 
   return (
-    <div>
-      <HeroBanner />
-      <div className="px-4 max-w-6xl mx-auto">
-        <SearchFilters setFilter={setFilter} />
+    <div className="text-gray-800">
+      <section
+        className="flex flex-col md:flex-row items-center justify-between px-6 md:px-20 py-6 text-white"
+        style={{ background: "linear-gradient(to right, #0f172a, #000000)" }}
+      >
+        <div className="md:w-1/2 space-y-6">
+          <h1 className="text-5xl font-bold text-white">
+            Welcome to <span className="text-blue-400">InterviewPrep</span>
+          </h1>
+          <p className="text-lg text-gray-300">
+            A student‑driven platform for sharing authentic interview experiences.
+            Learn from real stories, discover hiring patterns, and contribute your journey.
+          </p>
 
-        <DifficultyFilter current={filter.difficulty} setFilter={setFilter} />
-
-        <div className="flex justify-end my-4">
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md"
+          <button
+            onClick={handleGetStarted}
+            className="inline-block bg-blue-400 text-black font-semibold px-6 py-2 rounded-md hover:bg-blue-900 transition"
           >
-            <option value="latest">Sort by: Latest</option>
-            <option value="upvotes">Sort by: Upvotes</option>
-          </select>
+            Get Started
+          </button>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {experiences.length ? (
-            experiences.map((exp) => <ExperienceCard key={exp._id} exp={exp} />)
-          ) : (
-            <p className="text-center text-gray-500 col-span-full">No experiences found.</p>
-          )}
+        <div className="md:w-1/2 mt-8 md:mt-0">
+          <img src={heroImg} alt="Interview illustration" className="w-full max-w-md mx-auto rounded-lg" />
+        </div>
+      </section>
+
+      <section className="bg-gray-300 bg-opacity-80 py-16 px-6 md:px-20">
+        <h1 className="text-5xl font-bold text-center text-black mb-12">How it works!</h1>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="md:w-1/2 space-y-6 text-white bg-black bg-opacity-80 p-14 rounded-lg shadow animate-fade-in-up">
+            <div>
+              <h3 className="text-xl font-semibold">Practice Interviewing</h3>
+              <p>Prepare with real questions and answers shared by peers.</p>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold">Get Helpful Feedback</h3>
+              <p>See insights on difficulty, application process, salary, and more.</p>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold">Improve Your Skills</h3>
+              <p>Use shared experiences to refine your strategy.</p>
+            </div>
+          </div>
+
+          <video className="md:w-1/2 rounded-lg shadow-lg" controls>
+            <source src={howItWorksVideo} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </section>
+
+      <section
+        className="py-16 px-6 md:px-20"
+        style={{ background: "linear-gradient(to bottom, #0f172a, #1a1a1a)" }}
+      >
+        <h2 className="text-3xl font-bold text-center text-white mb-12">
+          Recent Interview Experiences
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {experiences.length
+            ? experiences.map((exp) => <ExperienceCard key={exp._id} exp={exp} />)
+            : <p className="col-span-full text-center text-gray-400">Loading…</p>}
         </div>
 
-        {/* Pagination Controls */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-8">
+        <div className="flex justify-center mt-10">
+          <Link
+            to="/interview"
+            className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg"
+          >
+            View All Experiences
+          </Link>
+        </div>
+      </section>
+
+      <section className="py-16 px-6 md:px-20" style={{ background: "linear-gradient(to bottom, #0f172a, #1a1a1a)" }}>
+        <h2 className="text-3xl font-bold mb-12 text-white text-left">Frequently Asked Questions</h2>
+        <div className="max-w-3xl text-white text-left space-y-8">
           <div>
-            <label className="mr-2 font-medium">Entries per page:</label>
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(1);
-              }}
-              className="border border-gray-300 rounded px-2 py-1"
-            >
-              {[3, 6, 9, 12].map((num) => (
-                <option key={num} value={num}>{num}</option>
-              ))}
-            </select>
+            <h4 className="text-xl font-semibold mb-2">Who can submit experiences?</h4>
+            <p>Anyone who has gone through an interview can share their journey.</p>
           </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handlePrev}
-              disabled={page === 1}
-              className="px-3 py-1 rounded border bg-white disabled:opacity-50"
-            >
-              Prev
-            </button>
-
-            {[...Array(totalPages)].map((_, idx) => (
-              <button
-                key={idx + 1}
-                onClick={() => setPage(idx + 1)}
-                className={`px-3 py-1 rounded border ${
-                  page === idx + 1 ? "bg-blue-500 text-white" : "bg-white"
-                }`}
-              >
-                {idx + 1}
-              </button>
-            ))}
-
-            <button
-              onClick={handleNext}
-              disabled={page === totalPages}
-              className="px-3 py-1 rounded border bg-white disabled:opacity-50"
-            >
-              Next
-            </button>
+          <div>
+            <h4 className="text-xl font-semibold mb-2">Are submissions moderated?</h4>
+            <p>Yes, every submission is reviewed to ensure quality and relevance.</p>
+          </div>
+          <div>
+            <h4 className="text-xl font-semibold mb-2">Can I edit my experience later?</h4>
+            <p>Currently, editing is not supported. You can delete and resubmit.</p>
           </div>
         </div>
-      </div>
+      </section>
+
+      <Modal
+        isOpen={openAuthModal}
+        onClose={() => {
+          setOpenAuthModal(false);
+          setCurrentPage("login");
+        }}
+        hideHeader
+      >
+        {currentPage === "login" && <Login setCurrentPage={setCurrentPage} onSuccess={() => setOpenAuthModal(false)} />}
+        {currentPage === "signup" && <SignUp setCurrentPage={setCurrentPage} onSuccess={() => setOpenAuthModal(false)} />}
+      </Modal>
+
+      <style>
+        {`
+          @keyframes fade-in-up {
+            0% {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          .animate-fade-in-up {
+            animation: fade-in-up 0.8s ease-out both;
+          }
+        `}
+      </style>
     </div>
   );
 }

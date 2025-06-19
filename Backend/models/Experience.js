@@ -4,7 +4,7 @@ const roundSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     duration: { type: String, trim: true },  
-    mode: { type: String, enum: ["Online", "Offline"], trim: true },
+    mode: { type: String, enum: ["Online", "Offline","Hybrid"], trim: true },
     codingProblems: { type: Number, min: 0 },
     description: { type: String, trim: true },
   },
@@ -44,7 +44,7 @@ const experienceSchema = new mongoose.Schema(
     upvotedBy: [{ type: String }], 
     approved: { type: Boolean, default: false },
 
-    mode: { type: String, enum: ["Online", "Offline"], trim: true },
+    mode: { type: String, enum: ["Online", "Offline","Hybrid"], trim: true },
     applicationMode: {
       type: String,
       enum: ["Referral", "On-Campus", "Off-Campus", "Other"],
