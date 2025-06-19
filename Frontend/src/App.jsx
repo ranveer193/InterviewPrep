@@ -9,6 +9,8 @@ import AllExperiences from "./pages/AllExperiences"
 import ExperienceDetail from "./components/ExperienceDetail";
 import Interview from "./pages/Interview"; 
 import CompanyDetail from "./pages/CompanyDetail"; 
+import OAquestions from "./pages/OAquestions";
+import OACompanyWise from "./pages/OACompanyWise";
 import { ToastContainer } from 'react-toastify';
 import ProtectedAdminRoute from "./components/protectedAdminRoute";
 
@@ -28,6 +30,8 @@ function App() {
           <ProtectedAdminRoute>
             <AdminPanel />
           </ProtectedAdminRoute> } />
+         <Route path="/oa" element={<OAquestions />} />
+        <Route path="/oa/:companyName" element={<OACompanyWise />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />

@@ -90,6 +90,10 @@ export default function Navbar() {
               Experiences
             </Link>
 
+          <Link to="/oa" className="hover:text-blue-400">
+              OA PYQs
+          </Link>
+          
             <Link
               to="/interview/company-wise"
               className={linkBase}
