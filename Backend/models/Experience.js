@@ -41,6 +41,7 @@ const experienceSchema = new mongoose.Schema(
 
     content: { type: String, default: "", trim: true },
     upvotes: { type: Number, default: 0, index: -1 },
+    upvotedBy: [{ type: String }], 
     approved: { type: Boolean, default: false },
 
     mode: { type: String, enum: ["Online", "Offline"], trim: true },

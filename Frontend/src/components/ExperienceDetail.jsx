@@ -2,7 +2,17 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import { ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
-import { FaThumbsUp, FaCalendar, FaUser, FaBuilding, FaClock, FaCode, FaGraduationCap } from "react-icons/fa";
+import {
+  FaThumbsUp,
+  FaCalendar,
+  FaUser,
+  FaBuilding,
+  FaClock,
+  FaCode,
+  FaGraduationCap,
+} from "react-icons/fa";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { toast } from "react-toastify";
 
 export default function ExperienceDetail() {
   const { id } = useParams();
@@ -10,43 +20,82 @@ export default function ExperienceDetail() {
   const [expandedRound, setExpandedRound] = useState(null);
   const [upvotes, setUpvotes] = useState(0);
   const [isUpvoted, setIsUpvoted] = useState(false);
+  const [user, setUser] = useState(null);
 
+  const auth = getAuth();
+
+  /* ─── Track auth state ─────────────────────────────── */
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u));
+    return () => unsubscribe();
+  }, [auth]);
+
+  /* ─── Fetch experience ─────────────────────────────── */
   useEffect(() => {
     axios
       .get(`http://localhost:5000/interview/${id}`)
       .then((res) => {
-        setExperience(res.data);
-        setUpvotes(res.data.upvotes || 0);
+        const exp = res.data;
+        setExperience(exp);
+        setUpvotes(exp.upvotes || 0);
+        setIsUpvoted(user ? exp.upvotedBy?.includes(user.uid) : false);
       })
       .catch(() => setExperience(undefined));
-  }, [id]);
+  }, [id, user]);
 
+  /* ─── Handle up‑vote toggle ────────────────────────── */
   const handleUpvote = async () => {
-    if (isUpvoted) return;
+    if (!user) {
+      toast.info("Please log in to up‑vote.");
+      return;
+    }
+
     try {
-      const res = await axios.patch(`http://localhost:5000/interview/${id}/upvote`);
+      const token = await user.getIdToken();
+      const res = await axios.patch(
+        `http://localhost:5000/interview/${id}/upvote`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
       setUpvotes(res.data.upvotes);
-      setIsUpvoted(true);
+      setIsUpvoted(res.data.upvoted);
+
+      if (res.data.upvoted) {
+        toast.success("Thanks for your up‑vote!",{ autoClose: 1500 });
+      } else {
+        toast.success("Up‑vote removed.", { autoClose: 1500 });
+      }
     } catch (err) {
-      console.error("Failed to upvote", err);
+      console.error("Up‑vote error:", err);
+      toast.error(
+        err.response?.data?.error || "Something went wrong while up‑voting."
+      , { autoClose: 1500 });
     }
   };
 
+  /* ─── Utility for difficulty badge ────────────────── */
   const getDifficultyColor = (difficulty) => {
-    switch (difficulty?.toLowerCase()) {
-      case 'easy': return 'text-green-600 bg-green-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'hard': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+    switch ((difficulty || "").toLowerCase()) {
+      case "easy":
+        return "text-green-600 bg-green-100";
+      case "medium":
+        return "text-yellow-600 bg-yellow-100";
+      case "hard":
+        return "text-red-600 bg-red-100";
+      default:
+        return "text-gray-600 bg-gray-100";
     }
   };
 
+  /* ─── Loading / not‑found states ───────────────────── */
   if (experience === null)
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-blue-600 text-lg">Loading...</div>
+        <div className="text-blue-600 text-lg">Loading…</div>
       </div>
     );
+
   if (experience === undefined)
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -54,21 +103,23 @@ export default function ExperienceDetail() {
       </div>
     );
 
+  /* ─── MAIN RENDER ─────────────────────────────────── */
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Back Button */}
-        <Link 
+        {/* Back button */}
+        <Link
           onClick={() => window.history.back()}
-          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-6 transition-colors"
+          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to All Experiences
         </Link>
 
-        {/* Header Card */}
+        {/* Header card */}
         <div className="bg-white border border-blue-200 rounded-2xl p-8 shadow-sm mb-8">
           <div className="flex items-start justify-between mb-6">
+            {/* Left: company / role */}
             <div>
               <div className="flex items-center gap-3 mb-3">
                 <FaBuilding className="text-blue-500 text-2xl" />
@@ -96,24 +147,40 @@ export default function ExperienceDetail() {
                 </div>
               </div>
             </div>
-            
+
+            {/* Right: difficulty + toggle button */}
             <div className="flex flex-col items-end gap-2">
               {experience.difficulty && (
-                <span className={`text-sm font-medium px-3 py-1 rounded-full ${getDifficultyColor(experience.difficulty)}`}>
+                <span
+                  className={`text-sm font-medium px-3 py-1 rounded-full ${getDifficultyColor(
+                    experience.difficulty
+                  )}`}
+                >
                   {experience.difficulty}
                 </span>
               )}
               <button
                 onClick={handleUpvote}
-                className={`flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-all duration-200 ${
-                  isUpvoted 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                } disabled:opacity-50`}
-                disabled={isUpvoted}
+                disabled={!user}
+                className={`flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-colors
+                  ${
+                    isUpvoted
+                      ? "bg-green-100 text-green-700 hover:bg-green-200"
+                      : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                  }
+                  ${!user ? "cursor-not-allowed opacity-60" : ""}`}
+                title={
+                  !user
+                    ? "Log in to up‑vote"
+                    : isUpvoted
+                    ? "Remove your up‑vote"
+                    : "Up‑vote this experience"
+                }
               >
-                <FaThumbsUp className={isUpvoted ? 'text-green-600' : 'text-blue-600'} />
-                {upvotes} {upvotes === 1 ? 'upvote' : 'upvotes'}
+                <FaThumbsUp
+                  className={isUpvoted ? "text-green-600" : "text-blue-600"}
+                />
+                {upvotes} {upvotes === 1 ? "up‑vote" : "up‑votes"}
               </button>
             </div>
           </div>
@@ -124,27 +191,34 @@ export default function ExperienceDetail() {
               <div className="flex items-center justify-center mb-2">
                 <FaClock className="text-blue-500 text-xl" />
               </div>
-              <div className="text-2xl font-bold text-blue-900">{experience.rounds?.length ?? 0}</div>
+              <div className="text-2xl font-bold text-blue-900">
+                {experience.rounds?.length ?? 0}
+              </div>
               <div className="text-sm text-gray-600">Total Rounds</div>
             </div>
+
             <div className="text-center p-4 bg-green-50 rounded-xl">
               <div className="flex items-center justify-center mb-2">
                 <FaCode className="text-green-500 text-xl" />
               </div>
               <div className="text-2xl font-bold text-green-600">
-                {experience.rounds?.reduce((sum, r) => sum + (r.codingProblems ?? 0), 0)}
+                {experience.rounds?.reduce(
+                  (sum, r) => sum + (r.codingProblems ?? 0),
+                  0
+                )}
               </div>
               <div className="text-sm text-gray-600">Coding Problems</div>
             </div>
+
             <div className="text-center p-4 bg-purple-50 rounded-xl">
               <div className="text-2xl font-bold text-purple-600">
-                {experience.mode || 'N/A'}
+                {experience.mode || "N/A"}
               </div>
               <div className="text-sm text-gray-600">Interview Mode</div>
             </div>
           </div>
 
-          {/* Additional Info */}
+          {/* Additional info badges */}
           <div className="flex flex-wrap gap-2">
             {experience.timeline && (
               <span className="text-xs text-purple-600 bg-purple-50 px-3 py-1 rounded-full">
@@ -162,11 +236,11 @@ export default function ExperienceDetail() {
               </span>
             )}
             {experience.linkedin && (
-              <a 
-                href={experience.linkedin} 
-                target="_blank" 
+              <a
+                href={experience.linkedin}
+                target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-blue-600 bg-blue-50 px-3 py-1 rounded-full hover:bg-blue-100 transition-colors"
+                className="text-xs text-blue-600 bg-blue-50 px-3 py-1 rounded-full hover:bg-blue-100"
               >
                 LinkedIn Profile
               </a>
@@ -174,20 +248,24 @@ export default function ExperienceDetail() {
           </div>
         </div>
 
-        {/* Interview Rounds */}
-        {experience.rounds && experience.rounds.length > 0 && (
+        {/* Interview rounds */}
+        {experience.rounds?.length > 0 && (
           <div className="bg-white border border-blue-200 rounded-2xl p-8 shadow-sm mb-8">
-            <h2 className="text-2xl font-bold text-blue-900 mb-6">Interview Rounds</h2>
-            
+            <h2 className="text-2xl font-bold text-blue-900 mb-6">
+              Interview Rounds
+            </h2>
+
             <div className="space-y-4">
               {experience.rounds.map((r, idx) => (
                 <div
                   key={idx}
-                  className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow"
+                  className="border border-gray-200 rounded-xl hover:shadow-md transition-shadow"
                 >
                   <button
-                    onClick={() => setExpandedRound(expandedRound === idx ? null : idx)}
-                    className="flex w-full items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition-colors"
+                    onClick={() =>
+                      setExpandedRound(expandedRound === idx ? null : idx)
+                    }
+                    className="flex w-full items-center justify-between px-6 py-4 text-left hover:bg-gray-50"
                   >
                     <div>
                       <p className="font-semibold text-blue-900">{r.name}</p>
@@ -212,7 +290,11 @@ export default function ExperienceDetail() {
                         )}
                       </div>
                     </div>
-                    {expandedRound === idx ? <ChevronUp className="text-gray-400" /> : <ChevronDown className="text-gray-400" />}
+                    {expandedRound === idx ? (
+                      <ChevronUp className="text-gray-400" />
+                    ) : (
+                      <ChevronDown className="text-gray-400" />
+                    )}
                   </button>
 
                   {expandedRound === idx && (
@@ -228,11 +310,15 @@ export default function ExperienceDetail() {
 
         {/* Overall Experience */}
         <div className="bg-white border border-blue-200 rounded-2xl p-8 shadow-sm">
-          <h2 className="text-2xl font-bold text-blue-900 mb-6">Overall Experience</h2>
+          <h2 className="text-2xl font-bold text-blue-900 mb-6">
+            Overall Experience
+          </h2>
 
           {experience.content && (
             <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Experience Summary</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                Experience Summary
+              </h3>
               <div className="text-gray-700 leading-relaxed whitespace-pre-line">
                 {experience.content}
               </div>
@@ -241,7 +327,9 @@ export default function ExperienceDetail() {
 
           {experience.preparationTips?.length > 0 && (
             <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Preparation Tips</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                Preparation Tips
+              </h3>
               <ul className="space-y-2">
                 {experience.preparationTips.map((tip, i) => (
                   <li key={i} className="flex items-start gap-3 text-gray-700">
@@ -255,7 +343,9 @@ export default function ExperienceDetail() {
 
           {experience.generalAdvice?.length > 0 && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">General Advice</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                General Advice
+              </h3>
               <ul className="space-y-2">
                 {experience.generalAdvice.map((adv, i) => (
                   <li key={i} className="flex items-start gap-3 text-gray-700">

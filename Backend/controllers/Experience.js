@@ -1,26 +1,4 @@
 const Experience = require('../models/Experience');
-const Upvote = require("../models/ExperienceUpvote");
-
-const toggleUpvote = async (req, res) => {
-  const { id } = req.params;          // experience id
-  const userId = req.user.uid;        // from verifyToken
-  try {
-    const existing = await Upvote.findOne({ expId: id, userId });
-
-    if (existing) {
-      await existing.deleteOne();
-      await Experience.findByIdAndUpdate(id, { $inc: { upvotes: -1 } });
-      return res.json({ upvoted: false });
-    }
-
-    await Upvote.create({ expId: id, userId });
-    await Experience.findByIdAndUpdate(id, { $inc: { upvotes: 1 } });
-    res.json({ upvoted: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Could not toggle up‑vote" });
-  }
-};
 
 const getAll = async (req, res) => {
   const data = await Experience.find({});
@@ -42,21 +20,41 @@ const getExperience = async (req, res) => {
 };
 
 const upvoteExperience = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const experience = await Experience.findById(id);
+  const { id } = req.params;
+  const userId = req.user?.uid; 
 
-    if (!experience) {
-      return res.status(404).json({ error: "Experience not found" });
+  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+  try {
+    const exp = await Experience.findById(id);
+    if (!exp) return res.status(404).json({ error: "Experience not found" });
+
+    exp.upvotedBy = exp.upvotedBy || [];
+    exp.upvotes   = exp.upvotes   || 0;
+
+    let upvoted;
+
+    if (exp.upvotedBy.includes(userId)) {
+      // ─── Un‑upvote (toggle off) ──────────────────────────
+      exp.upvotedBy = exp.upvotedBy.filter((uid) => uid !== userId);
+      exp.upvotes   = Math.max(exp.upvotes - 1, 0);
+      upvoted = false;
+    } else {
+      // ─── Add up‑vote (toggle on) ─────────────────────────
+      exp.upvotedBy.push(userId);
+      exp.upvotes += 1;
+      upvoted = true;
     }
 
-    experience.upvotes += 1;
-    await experience.save();
+    await exp.save();
 
-    res.json({ message: "Upvoted successfully", upvotes: experience.upvotes });
+    return res.json({
+      upvotes: exp.upvotes,
+      upvoted,  
+    });
   } catch (err) {
-    console.error("Error during upvote:", err);
-    res.status(500).json({ error: "Server error during upvote" });
+    console.error("Up‑vote error:", err);
+    return res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -140,4 +138,4 @@ const approveExperience = async (req, res) => {
   }
 };
 
-module.exports = {toggleUpvote,getExperience,getAll, getAllApproved, submitExperience, approveExperience,upvoteExperience };
+module.exports = {getExperience,getAll, getAllApproved, submitExperience, approveExperience,upvoteExperience };
