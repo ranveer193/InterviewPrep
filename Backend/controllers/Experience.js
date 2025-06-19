@@ -1,4 +1,26 @@
 const Experience = require('../models/Experience');
+const Upvote = require("../models/ExperienceUpvote");
+
+const toggleUpvote = async (req, res) => {
+  const { id } = req.params;          // experience id
+  const userId = req.user.uid;        // from verifyToken
+  try {
+    const existing = await Upvote.findOne({ expId: id, userId });
+
+    if (existing) {
+      await existing.deleteOne();
+      await Experience.findByIdAndUpdate(id, { $inc: { upvotes: -1 } });
+      return res.json({ upvoted: false });
+    }
+
+    await Upvote.create({ expId: id, userId });
+    await Experience.findByIdAndUpdate(id, { $inc: { upvotes: 1 } });
+    res.json({ upvoted: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Could not toggle up‑vote" });
+  }
+};
 
 const getAll = async (req, res) => {
   const data = await Experience.find({});
@@ -40,29 +62,32 @@ const upvoteExperience = async (req, res) => {
 
 const getAllApproved = async (req, res) => {
   try {
-    const { company, role, difficulty, sort } = req.query;
+    const { company, role, difficulty, sort = "latest", page = 1, limit = 12 } = req.query;
+
     const filter = { approved: true };
+    if (company) filter.company = { $regex: `^${company}$`, $options: "i" };
+    if (role)    filter.roleApplied = { $regex: role, $options: "i" };
+    if (difficulty) filter.difficulty = { $regex: difficulty, $options: "i" };
 
-    if (company) {
-      filter.company = { $regex: new RegExp(`^${company}$`, "i") }; // exact match, case-insensitive
-    }
+    const sortMap = { latest: { createdAt: -1 }, upvotes: { upvotes: -1 } };
 
-    if (role) {
-      filter.roleApplied = { $regex: role, $options: "i" };
-    }
+    const safeLimit = Math.min(Number(limit) || 12, 50);
+    const skip = (Math.max(Number(page), 1) - 1) * safeLimit;
 
-    if (difficulty) {
-      filter.difficulty = { $regex: difficulty, $options: "i" }; // partial match, case-insensitive
-    }
+    const [data, totalDocs] = await Promise.all([
+      Experience.find(filter).sort(sortMap[sort] || sortMap.latest).skip(skip).limit(safeLimit),
+      Experience.countDocuments(filter),
+    ]);
 
-    const sortOptions = {
-      latest: { createdAt: -1 },
-      upvotes: { upvotes: -1 },
-    };
-
-    const data = await Experience.find(filter).sort(sortOptions[sort] || { createdAt: -1 });
-    res.json(data);
+    res.json({
+      data,
+      page: Number(page),
+      limit: safeLimit,
+      totalPages: Math.ceil(totalDocs / safeLimit),
+      totalDocs,
+    });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 };
@@ -115,4 +140,4 @@ const approveExperience = async (req, res) => {
   }
 };
 
-module.exports = {getExperience,getAll, getAllApproved, submitExperience, approveExperience,upvoteExperience };
+module.exports = {toggleUpvote,getExperience,getAll, getAllApproved, submitExperience, approveExperience,upvoteExperience };
