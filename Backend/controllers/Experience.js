@@ -48,7 +48,7 @@ const getAllApproved = async (req, res) => {
     }
 
     if (role) {
-      filter.role = { $regex: role, $options: "i" }; // partial match, case-insensitive
+      filter.roleApplied = { $regex: role, $options: "i" };
     }
 
     if (difficulty) {

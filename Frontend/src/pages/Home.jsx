@@ -10,8 +10,6 @@ export default function Home() {
   const [filter, setFilter] = useState({ company: "", role: "", difficulty: "" });
   const [sortBy, setSortBy] = useState("latest");
 
-  
-
   useEffect(() => {
     const fetchExperiences = async () => {
       const params = new URLSearchParams();
