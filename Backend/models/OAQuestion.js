@@ -13,7 +13,11 @@ const oaQuestionSchema = new mongoose.Schema(
     explanation: {
       type: String,
       required: false,
-      default: "", // optional
+      default: "", 
+    },
+    approved: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

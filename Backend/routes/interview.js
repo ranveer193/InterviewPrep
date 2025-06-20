@@ -5,7 +5,7 @@ const verifyUser = require('../middleware/verifyUser');
 const verifyAdmin = require('../middleware/verifyAdmin');
 const requireAuth = require('../middleware/requireAuth');
 
-router.get('/all', getAll); 
+router.get('/all', verifyAdmin,getAll); 
 router.get('/', getAllApproved);
 router.post('/',verifyUser,submitExperience);
 router.patch('/:id/upvote',verifyUser,requireAuth,upvoteExperience);

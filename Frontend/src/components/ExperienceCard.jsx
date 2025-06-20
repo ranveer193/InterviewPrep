@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { toast } from "react-toastify";
 
-export default function ExperienceCard({ exp }) {
+export default function ExperienceCard({ exp, onUpvote }) {
   const auth = getAuth();
 
   const [upvotes, setUpvotes] = useState(exp.upvotes || 0);
@@ -51,16 +51,20 @@ export default function ExperienceCard({ exp }) {
       setUpvotes(res.data.upvotes);
       setIsUpvoted(res.data.upvoted);
 
+      // 🔥 New line: notify parent if callback is passed
+      if (onUpvote) onUpvote(res.data.updatedExperience || { ...exp, upvotes: res.data.upvotes });
+
       if (res.data.upvoted) {
-        toast.success("Upvoted!", {autoClose: 1500 });
+        toast.success("Upvoted!", { autoClose: 1500 });
       } else {
-        toast.success("Upvote removed.",{autoClose: 1500 });
+        toast.success("Upvote removed.", { autoClose: 1500 });
       }
     } catch (err) {
       console.error("Upvote failed:", err);
       toast.error(
-        err.response?.data?.error || "Something went wrong while upvoting."
-      ,{autoClose: 1500 });
+        err.response?.data?.error || "Something went wrong while upvoting.",
+        { autoClose: 1500 }
+      );
     }
   };
 
