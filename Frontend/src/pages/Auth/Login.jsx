@@ -29,7 +29,6 @@ export default function Login({ setCurrentPage, onSuccess }) {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast.success("Logged in successfully!", { autoClose: 2000 });
-
       if (onSuccess) onSuccess();
       else navigate("/");
     } catch (err) {

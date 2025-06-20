@@ -22,7 +22,7 @@ function App() {
       <ToastContainer/>
       <Routes>
         <Route path="/" element={<Home />} />
-//         <Route path="/submit-oa" element={<SubmitOAQuestion />} />
+        <Route path="/submit-oa" element={<SubmitOAQuestion />} />
         <Route path="/interview" element={<AllExperiences />} /> 
         <Route path="/interview/company-wise" element={<Interview />} />
         <Route path="/interview/:id" element={<ExperienceDetail />} /> 

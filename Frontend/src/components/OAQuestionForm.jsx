@@ -1,10 +1,10 @@
 import { useState } from "react";
 import axios from "axios";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";      // ⬅️ only toast, no ToastContainer
 import "react-toastify/dist/ReactToastify.css";
 
 // 👇 static list of companies
-import COMPANIES from "../constants/CompanyNames"; // adjust the path if your constants folder differs
+import COMPANIES from "../constants/CompanyNames";
 
 const emptyQuestion = () => ({
   question: "",
@@ -19,32 +19,26 @@ export default function OAQuestionForm({ onClose, isAnonymous }) {
   const [role,      setRole]      = useState("");
   const [year,      setYear]      = useState("");
   const [questions, setQuestions] = useState([emptyQuestion()]);
-
   const [submitting, setSubmitting] = useState(false);
 
   /* ---------------- helpers ---------------- */
   const handleChange = (idx, field, value) =>
-    setQuestions((prev) =>
+    setQuestions(prev =>
       prev.map((q, i) => (i === idx ? { ...q, [field]: value } : q))
     );
 
   const handleOptionChange = (qIdx, optIdx, value) =>
-    setQuestions((prev) =>
+    setQuestions(prev =>
       prev.map((q, i) =>
         i === qIdx
-          ? {
-              ...q,
-              options: q.options.map((opt, j) => (j === optIdx ? value : opt)),
-            }
+          ? { ...q, options: q.options.map((opt, j) => (j === optIdx ? value : opt)) }
           : q
       )
     );
 
-  const addQuestion    = () => setQuestions((prev) => [...prev, emptyQuestion()]);
+  const addQuestion    = () => setQuestions(prev => [...prev, emptyQuestion()]);
   const removeQuestion = (idx) =>
-    setQuestions((prev) =>
-      prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev
-    );
+    setQuestions(prev => (prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev));
 
   /* ---------------- submit ---------------- */
   const handleSubmit = async (e) => {
@@ -54,7 +48,7 @@ export default function OAQuestionForm({ onClose, isAnonymous }) {
       toast.error("Company, role, and year are required.");
       return;
     }
-    if (questions.some((q) => !q.question.trim())) {
+    if (questions.some(q => !q.question.trim())) {
       toast.error("Each entry must include a question text.");
       return;
     }
@@ -69,15 +63,20 @@ export default function OAQuestionForm({ onClose, isAnonymous }) {
         anonymous: isAnonymous,
       });
 
-      toast.success("OA question(s) saved! 🎉");
+      toast.success("Submitted! Sent to admin for approval ✅", {
+        position: "top-center",
+        autoClose: 2500,
+      });
+
       setCompany("");
       setRole("");
       setYear("");
       setQuestions([emptyQuestion()]);
-      if (onClose) setTimeout(onClose, 800);
+
+      if (onClose) setTimeout(onClose, 1200); // delay close to let toast show
     } catch (err) {
       const msg = err.response?.data?.message || err.message;
-      toast.error(`Save failed: ${msg}`);
+      toast.error(`Save failed: ${msg}`, { position: "top-center" });
     } finally {
       setSubmitting(false);
     }
@@ -89,47 +88,21 @@ export default function OAQuestionForm({ onClose, isAnonymous }) {
       onSubmit={handleSubmit}
       className="bg-white rounded-lg shadow p-6 md:p-8 space-y-8 w-[90vw] md:w-[600px] max-h-[90vh] overflow-y-auto custom-scrollbar"
     >
-      {/* toasts */}
-      <ToastContainer
-        position="top-center"
-        autoClose={2500}
-        hideProgressBar={false}
-        newestOnTop
-        pauseOnFocusLoss
-        pauseOnHover
-        theme="light"
-      />
-
       <h2 className="text-2xl font-bold text-blue-700 mb-2">Submit OA Question</h2>
 
       {/* meta */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* company dropdown */}
-        <select
-          className="input-box"
-          value={company}
-          onChange={(e) => setCompany(e.target.value)}
-        >
+        <select className="input-box" value={company} onChange={(e) => setCompany(e.target.value)}>
           <option value="">Select Company*</option>
-          {COMPANIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
+          {COMPANIES.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
 
-        {/* role */}
-        <select
-          className="input-box"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-        >
+        <select className="input-box" value={role} onChange={(e) => setRole(e.target.value)}>
           <option value="">Role* (select)</option>
           <option value="Internship">Internship</option>
           <option value="Placement">Placement</option>
         </select>
 
-        {/* year */}
         <input
           type="number"
           className="input-box"

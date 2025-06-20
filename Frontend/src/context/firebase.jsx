@@ -1,14 +1,13 @@
 import { createContext,useContext } from 'react';
 import {initializeApp} from 'firebase/app'
-import {getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut} from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC0ERzg5sHdIlNeCVSBV4_jH9hy65UMy_A",
-  authDomain: "interviewsite-1d5bf.firebaseapp.com",
-  projectId: "interviewsite-1d5bf",
-  storageBucket: "interviewsite-1d5bf.firebasestorage.app",
-  messagingSenderId: "197459394543",
-  appId: "1:197459394543:web:e2e029b25e195e17a8001a"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
