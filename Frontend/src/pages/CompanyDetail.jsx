@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import HeroBanner from "../components/HeroBanner";
@@ -19,53 +19,55 @@ export default function CompanyDetail() {
   const [pageSize, setPageSize] = useState(6);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    const fetchCompanyExperiences = async () => {
-      try {
-        setLoading(true);
-        const params = new URLSearchParams();
-        params.append("company", companyName);
-        params.append("sort", sortBy);
-        params.append("page", page);
-        params.append("limit", pageSize);
-        if (difficultyFilter !== "All") {
-          params.append("difficulty", difficultyFilter);
-        }
+  const fetchCompanyExperiences = useCallback(async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        company: companyName,
+        sort: sortBy,
+        page,
+        limit: pageSize,
+      });
+      if (difficultyFilter !== "All") params.append("difficulty", difficultyFilter);
 
-        const res = await axios.get(`http://localhost:5000/interview?${params.toString()}`);
-        const rows = res.data?.data || [];
-        setExperiences(rows);
-        setTotalPages(res.data?.totalPages || 1);
-        computeStats(rows);
-      } catch (err) {
-        console.error("Error fetching company experiences:", err);
-        setExperiences([]);
-        setCompanyStats(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCompanyExperiences();
+      const res = await axios.get(`http://localhost:5000/interview?${params.toString()}`);
+      const rows = res.data?.data || [];
+      setExperiences(rows);
+      setTotalPages(res.data?.totalPages || 1);
+    } catch (err) {
+      console.error("Error fetching company experiences:", err);
+      setExperiences([]);
+    } finally {
+      setLoading(false);
+    }
   }, [companyName, sortBy, page, pageSize, difficultyFilter]);
 
-  const computeStats = (rows) => {
-    if (!rows.length) return setCompanyStats(null);
-    const totalUpvotes = rows.reduce((sum, r) => sum + (r.upvotes || 0), 0);
-    const roles = [...new Set(rows.map(r => r.roleApplied || r.role).filter(Boolean))];
-    const difficulties = [...new Set(rows.map(r => r.difficulty).filter(Boolean))];
+  useEffect(() => {
+    fetchCompanyExperiences();
+  }, [fetchCompanyExperiences]);
+
+  useEffect(() => {
+    if (!experiences.length) return setCompanyStats(null);
+
+    const totalUpvotes = experiences.reduce((s, r) => s + (r.upvotes || 0), 0);
+    const roles = [...new Set(experiences.map(r => r.roleApplied || r.role).filter(Boolean))];
+    const difficulties = [...new Set(experiences.map(r => r.difficulty).filter(Boolean))];
+
     setCompanyStats({
       company: companyName,
-      experienceCount: rows.length,
+      experienceCount: experiences.length,
       totalUpvotes,
-      averageUpvotes: totalUpvotes / rows.length,
+      averageUpvotes: totalUpvotes / experiences.length,
       roles,
       difficulties,
     });
-  };
+  }, [experiences, companyName]);
 
-  const handlePrev = () => setPage((p) => Math.max(p - 1, 1));
-  const handleNext = () => setPage((p) => Math.min(p + 1, totalPages));
+  const handleUpvote = updatedExp => {
+    setExperiences(prev =>
+      prev.map(e => (e._id === updatedExp._id ? updatedExp : e))
+    );
+  };
 
   if (loading) {
     return (
@@ -83,16 +85,12 @@ export default function CompanyDetail() {
       />
 
       <div className="px-4 max-w-6xl mx-auto py-8">
-        <Link to="/interview" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-6">
-          <FaArrowLeft />
-          Back to All Companies
+        <Link to="/interview/company-wise" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-6">
+          <FaArrowLeft /> Back to All Companies
         </Link>
 
-        {companyStats && (
-          <StatsCard data={companyStats} />
-        )}
+        {companyStats && <StatsCard data={companyStats} />}
 
-        {/* Filters */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <h3 className="text-xl font-semibold text-blue-900">
             Experiences ({experiences.length})
@@ -117,11 +115,10 @@ export default function CompanyDetail() {
           </div>
         </div>
 
-        {/* Experience Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {experiences.length ? (
             experiences.map((exp) => (
-              <ExperienceCard key={exp._id} exp={exp} />
+              <ExperienceCard key={exp._id} exp={exp} onUpvote={handleUpvote} />
             ))
           ) : (
             <p className="text-center text-gray-500 col-span-full">
@@ -130,7 +127,6 @@ export default function CompanyDetail() {
           )}
         </div>
 
-        {/* Pagination Controls */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-8">
           <div>
             <label className="mr-2 font-medium">Entries per page:</label>
@@ -150,27 +146,25 @@ export default function CompanyDetail() {
 
           <div className="flex items-center gap-2">
             <button
-              onClick={handlePrev}
+              onClick={() => setPage(p => Math.max(p - 1, 1))}
               disabled={page === 1}
               className="px-3 py-1 rounded border bg-white disabled:opacity-50"
             >
               Prev
             </button>
 
-            {[...Array(totalPages)].map((_, idx) => (
+            {[...Array(totalPages)].map((_, i) => (
               <button
-                key={idx + 1}
-                onClick={() => setPage(idx + 1)}
-                className={`px-3 py-1 rounded border ${
-                  page === idx + 1 ? "bg-blue-500 text-white" : "bg-white"
-                }`}
+                key={i + 1}
+                onClick={() => setPage(i + 1)}
+                className={`px-3 py-1 rounded border ${page === i + 1 ? "bg-blue-500 text-white" : "bg-white"}`}
               >
-                {idx + 1}
+                {i + 1}
               </button>
             ))}
 
             <button
-              onClick={handleNext}
+              onClick={() => setPage(p => Math.min(p + 1, totalPages))}
               disabled={page === totalPages}
               className="px-3 py-1 rounded border bg-white disabled:opacity-50"
             >

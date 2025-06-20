@@ -16,12 +16,12 @@ const getCompanies = async (_req, res) => {
 const getQuestionsByCompany = async (req, res) => {
   try {
     const company   = decodeURIComponent(req.params.company);
-    const questions = await OAQuestion.find({ company })
+    const questions = await OAQuestion.find({ company , approved: true })
       .select("year role question detail -_id")
       .sort({ year: -1 })
       .exec();
 
-    res.json(questions);                   // ✅ always array
+    res.json(questions);                   
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -52,8 +52,36 @@ const bulkCreate = async (req, res) => {
   }
 };
 
+const getAll = async (req, res) => {
+  const data = await OAQuestion.find({});
+  res.json(data);
+}
+
+const approveQuestion = async (req, res) => {
+  const { id, action } = req.params;
+
+  if (action === "approve" || action === "reject") {
+    try {
+      if (action === "approve") {
+        await OAQuestion.findByIdAndUpdate(id, { approved: true });
+        res.json({ message: "OA Question approved successfully." });
+      } else {
+        await OAQuestion.findByIdAndDelete(id);
+        res.json({ message: "OA Question rejected and deleted." });
+      }
+    } catch (err) {
+      console.error("Admin action failed:", err);
+      res.status(500).json({ error: "Server error during approval/rejection." });
+    }
+  } else {
+    res.status(400).json({ error: "Invalid action." });
+  }
+};
+
 module.exports = {
   getCompanies,
   getQuestionsByCompany,
   bulkCreate,
+  getAll,
+  approveQuestion,
 };

@@ -2,10 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "../../components/Inputs/Input.jsx";
 import GoogleLoginButton from "../../components/LoginWithGoogle.jsx";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase";
 import { toast } from "react-toastify";
 import { isAllowedEmail, allowedDomain } from "../../utils/allowedDomain";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Login({ setCurrentPage, onSuccess }) {
   const [email, setEmail] = useState("");
@@ -14,22 +13,24 @@ export default function Login({ setCurrentPage, onSuccess }) {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleEmailLogin = async (e) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    if (!isAllowedEmail(email)) {
-      toast.error(`Only ${allowedDomain} accounts can log in`, { autoClose: 2500 });
+    if (allowedDomain && !isAllowedEmail(email)) {
+      toast.error(`Only ${allowedDomain} accounts can log in`, {
+        autoClose: 2500,
+      });
       setLoading(false);
       return;
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await login(email, password);
       toast.success("Logged in successfully!", { autoClose: 2000 });
-
       if (onSuccess) onSuccess();
       else navigate("/");
     } catch (err) {
@@ -62,7 +63,10 @@ export default function Login({ setCurrentPage, onSuccess }) {
 
           {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
-          <form onSubmit={handleEmailLogin} className="flex flex-col gap-4 w-full">
+          <form
+            onSubmit={handleEmailLogin}
+            className="flex flex-col gap-4 w-full"
+          >
             <Input
               label="Email Address"
               type="email"
@@ -94,14 +98,14 @@ export default function Login({ setCurrentPage, onSuccess }) {
               </button>
             </p>
 
-            {/* Divider */}
             <div className="flex items-center my-4">
               <hr className="flex-grow border-gray-300" />
-              <span className="mx-2 text-sm text-gray-500">or continue with</span>
+              <span className="mx-2 text-sm text-gray-500">
+                or continue with
+              </span>
               <hr className="flex-grow border-gray-300" />
             </div>
 
-            {/* Google Sign‑in */}
             <div className="flex justify-center">
               <GoogleLoginButton onSuccess={onSuccess} />
             </div>
