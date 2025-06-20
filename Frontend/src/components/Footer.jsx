@@ -10,7 +10,7 @@ const Footer = () => {
           <a href="/" className="hover:text-blue-400 text-sm">Home</a>
           <a href="/Interview" className="hover:text-blue-400 text-sm">Experiences</a>
           <a href="/Submit" className="hover:text-blue-400 text-sm">Share</a>
-          <a href="/OAquestions" className="hover:text-blue-400 text-sm">OA Questions</a>
+          <a href="/oa" className="hover:text-blue-400 text-sm">OA Questions</a>
         </div>
       </div>
     </footer>

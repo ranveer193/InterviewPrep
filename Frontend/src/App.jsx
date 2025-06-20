@@ -8,10 +8,10 @@ import Footer from "./components/Footer";
 import SubmitOAQuestion from "./pages/SubmitOAQuestion";
 import AllExperiences from "./pages/AllExperiences"
 import ExperienceDetail from "./components/ExperienceDetail";
-import Interview from "./pages/Interview"; 
-import CompanyDetail from "./pages/CompanyDetail"; 
+import Interview from "./pages/Interview";
+import CompanyDetail from "./pages/CompanyDetail";
 import OAquestions from "./pages/OAquestions";
-import OACompanyWise from "./pages/OACompanyWise";
+import OACompanyWise from "./pages/OAcompanywise";
 import ProtectedAdminRoute from "./components/protectedAdminRoute";
 
 function App() {
