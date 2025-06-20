@@ -20,6 +20,7 @@ export default function Navbar() {
 
   const navigate = useNavigate();
   const location = useLocation();
+  const isActive = (path) => location.pathname === path;
 
   /* ------------------------------------------------------------------ */
   const handleLogout = async () => {
@@ -72,10 +73,11 @@ export default function Navbar() {
               isMenuOpen ? "flex" : "hidden"
             } md:flex flex-col md:flex-row md:items-center gap-3 md:gap-4 absolute md:static left-0 top-16 md:top-0 w-full md:w-auto bg-gray-900 md:bg-transparent px-4 py-3 md:p-0 z-50`}
           >
-            <Link to="/"     className={linkBase} onClick={() => setIsMenuOpen(false)}>Home</Link>
-            <Link to="/interview" className={linkBase} onClick={() => setIsMenuOpen(false)}>Experiences</Link>
-            <Link to="/oa"   className="hover:text-blue-400">OA PYQs</Link>
-            <Link to="/interview/company-wise" className={linkBase} onClick={() => setIsMenuOpen(false)}>Company‑wise</Link>
+            <Link to="/" className={`${linkBase} ${isActive("/") ? "text-blue-400 font-semibold" : ""}`} onClick={() => setIsMenuOpen(false)}>Home</Link>
+            <Link to="/interview" className={`${linkBase} ${isActive("/interview") ? "text-blue-400 font-semibold" : ""}`} onClick={() => setIsMenuOpen(false)}>Experiences</Link>
+            <Link to="/oa" className={`${linkBase} ${isActive("/oa") ? "text-blue-400 font-semibold" : ""}`} onClick={() => setIsMenuOpen(false)}>OA PYQs</Link>
+            <Link to="/interview/company-wise" className={`${linkBase} ${isActive("/interview/company-wise") ? "text-blue-400 font-semibold" : ""}`} onClick={() => setIsMenuOpen(false)}>Company‑wise</Link>
+
 
             {!isSubmitPage && !isAdminPage && (
               <button
