@@ -1,5 +1,4 @@
-export const allowedDomain = "@nitkkr.ac.in";
-
+export const allowedDomain = "";      
 export function isAllowedEmail(email = "") {
-  return email.toLowerCase().endsWith(allowedDomain);
+  return allowedDomain && email.toLowerCase().endsWith(allowedDomain);
 }

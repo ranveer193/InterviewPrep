@@ -1,55 +1,111 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus } from "lucide-react";
 import Modal from "../components/Modal";
 import OAQuestionForm from "../components/OAQuestionForm";
 import axios from "axios";
 
-export default function OAquestions() {
-  const [companyList, setCompanyList]   = useState([]);
-  const [loading,     setLoading]       = useState(true);
-  const [error,       setError]         = useState(null);
-  const [searchText,  setSearchText]    = useState("");
-  const [activeFilter,setActiveFilter]  = useState("All Companies");
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-  const [formOpen,    setFormOpen]      = useState(false);
+import Login from "./Auth/Login";
+import SignUp from "./Auth/SignUp";
+import { useAuth } from "../context/AuthContext";
+
+export default function OAquestions() {
+  const [companyList, setCompanyList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchText, setSearchText] = useState("");
+  const [activeFilter, setActiveFilter] = useState("All Companies");
+
+  const [formOpen, setFormOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authPage, setAuthPage] = useState("login");
 
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const fetchCompanies = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/oa/companies");
-      setCompanyList(res.data);
-    } catch (err) {
-      setError(err.message ?? "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  };
-  useEffect(() => { fetchCompanies(); }, []);
+  /* fetch list */
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/oa/companies")
+      .then((res) => setCompanyList(res.data))
+      .catch((err) => setError(err.message ?? "Something went wrong"))
+      .finally(() => setLoading(false));
+  }, []);
 
-  /* derived list */
+  const handleAddClick = () => (user ? setFormOpen(true) : setAuthOpen(true));
+
+  /* search + filter */
   const filtered = companyList.filter((c) => {
     const matchesSearch = c.toLowerCase().includes(searchText.toLowerCase());
-    const matchesFilter = activeFilter === "All Companies" || c === activeFilter;
+    const matchesFilter =
+      activeFilter === "All Companies" || c === activeFilter;
     return matchesSearch && matchesFilter;
   });
 
-  /* UI */
+  /* ------------------------------------------------------------------ */
   return (
     <div className="max-w-6xl mx-auto p-6 relative">
-      {/* floating add button */}
+      {/* floating add */}
       <button
-        onClick={() => setFormOpen(true)}
+        onClick={handleAddClick}
         className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg"
         title="Submit OA question"
       >
         <Plus className="w-6 h-6" />
       </button>
 
-      {/* modal */}
-      <Modal isOpen={formOpen} onClose={() => { setFormOpen(false); fetchCompanies(); }}>
-        <OAQuestionForm onClose={() => { setFormOpen(false); fetchCompanies(); }} />
+      {/* OA form modal */}
+      <Modal
+        isOpen={formOpen}
+        onClose={() => {
+          setFormOpen(false);
+          axios
+            .get("http://localhost:5000/oa/companies")
+            .then((res) => setCompanyList(res.data))
+            .catch(() => {});
+        }}
+      >
+        <OAQuestionForm
+          onClose={() => {
+            setFormOpen(false);
+            axios
+              .get("http://localhost:5000/oa/companies")
+              .then((res) => setCompanyList(res.data))
+              .catch(() => {});
+          }}
+          isAnonymous={false}
+        />
+      </Modal>
+
+      {/* login / signup modal */}
+      <Modal
+        isOpen={authOpen}
+        onClose={() => {
+          setAuthOpen(false);
+          setAuthPage("login");
+        }}
+        hideHeader
+      >
+        {authPage === "login" ? (
+          <Login
+            setCurrentPage={setAuthPage}
+            onSuccess={() => {
+              setAuthOpen(false);
+              setFormOpen(true);
+            }}
+          />
+        ) : (
+          <SignUp
+            setCurrentPage={setAuthPage}
+            onSuccess={() => {
+              setAuthOpen(false);
+              setFormOpen(true);
+            }}
+          />
+        )}
       </Modal>
 
       {/* back */}
@@ -115,7 +171,9 @@ export default function OAquestions() {
             filtered.map((company) => (
               <div
                 key={company}
-                onClick={() => navigate(`/oa/${encodeURIComponent(company)}`)}
+                onClick={() =>
+                  navigate(`/oa/${encodeURIComponent(company)}`)
+                }
                 className="cursor-pointer border border-blue-200 rounded-xl p-6 bg-white shadow hover:shadow-lg"
               >
                 <h2 className="text-xl font-semibold text-blue-700">

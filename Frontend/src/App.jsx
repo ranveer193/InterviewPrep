@@ -11,7 +11,7 @@ import ExperienceDetail from "./components/ExperienceDetail";
 import Interview from "./pages/Interview";
 import CompanyDetail from "./pages/CompanyDetail";
 import OAquestions from "./pages/OAquestions";
-import OACompanyWise from "./pages/OAcompanywise";
+import OACompanyWise from "./pages/OACompanyWise";
 import { ToastContainer } from 'react-toastify';
 import ProtectedAdminRoute from "./components/protectedAdminRoute";
 
