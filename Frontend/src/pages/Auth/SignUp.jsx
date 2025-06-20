@@ -8,9 +8,9 @@ import { useAuth } from "../../context/AuthContext";
 
 export default function SignUp({ setCurrentPage, onSuccess }) {
   const [fullName, setFullName] = useState("");
-  const [email, setEmail]       = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const { signup } = useAuth();
@@ -19,7 +19,7 @@ export default function SignUp({ setCurrentPage, onSuccess }) {
     e.preventDefault();
     setLoading(true);
 
-    if (!isAllowedEmail(email)) {
+    if (allowedDomain && !isAllowedEmail(email)) {
       toast.error(`Only ${allowedDomain} emails are allowed`, {
         autoClose: 2500,
       });
@@ -50,7 +50,6 @@ export default function SignUp({ setCurrentPage, onSuccess }) {
     }
   };
 
-  /* ------------------------------------------------------------------ */
   return (
     <div className="w-[90vw] md:w-[33vw] p-5 flex flex-col">
       {loading ? (

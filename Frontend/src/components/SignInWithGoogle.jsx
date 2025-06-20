@@ -4,8 +4,9 @@ import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { toast } from "react-toastify";
 import googleSignupImg from "../assets/google_signin.png";
 import { auth } from "../firebase";
+import { isAllowedEmail, allowedDomain } from "../utils/allowedDomain";
 
-export default function GoogleSignUpButton({ onSuccess }) {
+export default function GoogleSignInButton({ onSuccess }) {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -14,21 +15,18 @@ export default function GoogleSignUpButton({ onSuccess }) {
     const provider = new GoogleAuthProvider();
 
     try {
-      const result = await signInWithPopup(auth, provider);
-      const email  = result.user?.email || "";
+      const { user } = await signInWithPopup(auth, provider);
+      const email = user?.email || "";
 
-      if (!email.endsWith("@nitkkr.ac.in")) {
+      if (allowedDomain && !isAllowedEmail(email)) {
         await signOut(auth);
-        toast.error("Only nitkkr.ac.in emails are allowed", { autoClose: 2500 });
+        toast.error(`Only ${allowedDomain} emails are allowed`, { autoClose: 2500 });
         setLoading(false);
         return;
       }
 
       toast.success("Signed up successfully!", { autoClose: 2000 });
-
-      // ⬇️ Tell parent or navigate
-      if (onSuccess) onSuccess();
-      else navigate("/");
+      onSuccess ? onSuccess() : navigate("/");
 
     } catch (err) {
       console.error("Google Sign‑Up error:", err);

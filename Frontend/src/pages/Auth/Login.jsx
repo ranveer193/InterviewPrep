@@ -20,7 +20,7 @@ export default function Login({ setCurrentPage, onSuccess }) {
     setError(null);
     setLoading(true);
 
-    if (!isAllowedEmail(email)) {
+    if (allowedDomain && !isAllowedEmail(email)) {
       toast.error(`Only ${allowedDomain} accounts can log in`, {
         autoClose: 2500,
       });
@@ -47,7 +47,6 @@ export default function Login({ setCurrentPage, onSuccess }) {
     }
   };
 
-  /* ------------------------------------------------------------------ */
   return (
     <div className="w-[90vw] md:w-[33vw] p-7 flex flex-col items-center">
       {loading ? (
@@ -99,7 +98,6 @@ export default function Login({ setCurrentPage, onSuccess }) {
               </button>
             </p>
 
-            {/* Divider */}
             <div className="flex items-center my-4">
               <hr className="flex-grow border-gray-300" />
               <span className="mx-2 text-sm text-gray-500">
@@ -108,7 +106,6 @@ export default function Login({ setCurrentPage, onSuccess }) {
               <hr className="flex-grow border-gray-300" />
             </div>
 
-            {/* Google */}
             <div className="flex justify-center">
               <GoogleLoginButton onSuccess={onSuccess} />
             </div>
