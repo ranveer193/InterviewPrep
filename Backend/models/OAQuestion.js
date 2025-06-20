@@ -19,6 +19,7 @@ const oaQuestionSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    difficulty: { type: String, enum: ["Easy", "Medium", "Hard"], default: null },
   },
   { timestamps: true }
 );

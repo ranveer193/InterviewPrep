@@ -40,6 +40,7 @@ const experienceSchema = new mongoose.Schema(
     },
 
     content: { type: String, default: "", trim: true },
+    summary:  { type: String, default: null }, 
     upvotes: { type: Number, default: 0, index: -1 },
     upvotedBy: [{ type: String }], 
     approved: { type: Boolean, default: false },

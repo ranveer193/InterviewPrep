@@ -11,13 +11,13 @@ app.use(express.json());
 
 connectDB();
 
-// const authRoutes = require('./routes/auth');
 const interviewRoutes = require('./routes/interview');
 const oaRoutes = require('./routes/oa');
+const aiRoutes = require('./routes/aiRoutes');
 
 app.use('/interview', interviewRoutes);
 app.use('/oa', oaRoutes);
-// app.use('/auth', authRoutes);
+app.use('/ai', aiRoutes);
 
 app.get('/',(req,res) => {
     res.status(200).json({
