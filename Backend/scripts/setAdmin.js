@@ -1,4 +1,4 @@
-const admin = require("./firebase-admin");
+const admin = require("../firebase-admin");
 require("dotenv").config();
 
 const uid = "user_uid"; 

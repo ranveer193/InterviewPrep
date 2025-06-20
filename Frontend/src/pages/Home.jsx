@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { getAuth } from "firebase/auth";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import ExperienceCard from "../components/ExperienceCard";
 import axios from "axios";
 import heroImg from "../assets/hero-img.png";
@@ -25,6 +29,15 @@ export default function Home() {
     fetchExperiences();
   }, []);
 
+  const handleGetStarted = () => {
+    const user = getAuth().currentUser;
+    if (user) {
+      toast.info("You're already logged in ✨", {autoClose: 2000});
+    } else {
+      setOpenAuthModal(true);
+    }
+  };
+
   return (
     <div className="text-gray-800">
       <section
@@ -41,7 +54,7 @@ export default function Home() {
           </p>
 
           <button
-            onClick={() => setOpenAuthModal(true)}
+            onClick={handleGetStarted}
             className="inline-block bg-blue-400 text-black font-semibold px-6 py-2 rounded-md hover:bg-blue-900 transition"
           >
             Get Started

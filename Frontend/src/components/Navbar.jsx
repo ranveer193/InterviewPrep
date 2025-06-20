@@ -18,6 +18,7 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isAdmin, loading } = useAdminStatus();
 
+  const [redirectAfterAuth, setRedirectAfterAuth] = useState("/");
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -104,10 +105,11 @@ export default function Navbar() {
 
             {!isSubmitPage && !isAdminPage && (
               <button
-                className={linkBase + " text-left"}
-                onClick={() =>
-                  user ? setShowPreferenceModal(true) : openAuth("login")
-                }
+                onClick={() => {
+                  if (user) setShowPreferenceModal(true);
+                  else openAuth("login"); // prompt login first
+                }}
+                className="hover:text-blue-400"
               >
                 Share Experience
               </button>
@@ -144,7 +146,7 @@ export default function Navbar() {
                 onClick={() => openAuth("login")}
                 className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-1.5 rounded"
               >
-                Login / Sign Up
+                Login / Sign Up
               </button>
             )}
           </div>

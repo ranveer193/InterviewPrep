@@ -5,6 +5,7 @@ import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import SubmitOAQuestion from "./pages/SubmitOAQuestion";
 import AllExperiences from "./pages/AllExperiences"
 import ExperienceDetail from "./components/ExperienceDetail";
 import Interview from "./pages/Interview"; 
@@ -21,6 +22,7 @@ function App() {
       <ToastContainer/>
       <Routes>
         <Route path="/" element={<Home />} />
+//         <Route path="/submit-oa" element={<SubmitOAQuestion />} />
         <Route path="/interview" element={<AllExperiences />} /> 
         <Route path="/interview/company-wise" element={<Interview />} />
         <Route path="/interview/:id" element={<ExperienceDetail />} /> 
