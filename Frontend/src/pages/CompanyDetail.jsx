@@ -85,7 +85,7 @@ export default function CompanyDetail() {
       />
 
       <div className="px-4 max-w-6xl mx-auto py-8">
-        <Link to="/interview" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-6">
+        <Link to="/interview/company-wise" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-6">
           <FaArrowLeft /> Back to All Companies
         </Link>
 
