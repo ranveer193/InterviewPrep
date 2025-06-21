@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { ChevronDown, ChevronRight, ArrowLeft } from "lucide-react";
+//import AIInterviewCard from "../components/AIInterviewCard";
 
 export default function OACompanyWise() {
   const { companyName } = useParams();
@@ -72,6 +73,26 @@ export default function OACompanyWise() {
         {companyName}&nbsp;–&nbsp;OA Questions
       </h1>
 
+      {/* AI Interview Card - Prominently displayed
+      <div className="mb-8">
+        <AIInterviewCard company={companyName} />
+      </div> */}
+
+      {/* Role filter pills */}
+      <div className="flex gap-2 mb-6">
+        {["All", "Internship", "Placement"].map((r) => (
+          <button
+            key={r}
+            onClick={() => setRoleFilter(r)}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+              roleFilter === r
+                ? "bg-blue-600 text-white"
+                : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+            }`}
+          >
+            {r}
+          </button>
+        ))}
       {/* Filter bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-6">
         {/* Role */}
