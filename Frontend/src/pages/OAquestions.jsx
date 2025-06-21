@@ -6,7 +6,6 @@ import OAQuestionForm from "../components/OAQuestionForm";
 //import AIInterviewCard from "../components/AIInterviewCard";
 import axios from "axios";
 
-import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import Login from "./Auth/Login";
