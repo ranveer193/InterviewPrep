@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { ChevronDown, ChevronRight, ArrowLeft } from "lucide-react";
+//import AIInterviewCard from "../components/AIInterviewCard";
 
 export default function OACompanyWise() {
   const { companyName } = useParams();
@@ -67,6 +68,11 @@ export default function OACompanyWise() {
       <h1 className="text-3xl font-bold text-blue-800 mb-2">
         {companyName}&nbsp;–&nbsp;OA Questions
       </h1>
+
+      {/* AI Interview Card - Prominently displayed
+      <div className="mb-8">
+        <AIInterviewCard company={companyName} />
+      </div> */}
 
       {/* Role filter pills */}
       <div className="flex gap-2 mb-6">

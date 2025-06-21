@@ -77,6 +77,7 @@ export default function Navbar() {
             <Link to="/interview" className={`${linkBase} ${isActive("/interview") ? "text-blue-400 font-semibold" : ""}`} onClick={() => setIsMenuOpen(false)}>Experiences</Link>
             <Link to="/oa" className={`${linkBase} ${isActive("/oa") ? "text-blue-400 font-semibold" : ""}`} onClick={() => setIsMenuOpen(false)}>OA PYQs</Link>
             <Link to="/interview/company-wise" className={`${linkBase} ${isActive("/interview/company-wise") ? "text-blue-400 font-semibold" : ""}`} onClick={() => setIsMenuOpen(false)}>Company‑wise</Link>
+            <Link to="/ai-interview" className={`${linkBase} ${isActive("/ai-interview") ? "text-blue-400 font-semibold" : ""}`} onClick={() => setIsMenuOpen(false)}>AI Interview</Link>
 
 
             {!isSubmitPage && !isAdminPage && (

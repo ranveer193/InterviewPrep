@@ -12,6 +12,7 @@ import Interview from "./pages/Interview";
 import CompanyDetail from "./pages/CompanyDetail";
 import OAquestions from "./pages/OAquestions";
 import OACompanyWise from "./pages/OACompanyWise";
+import AIInterview from "./pages/AIInterview";
 import { ToastContainer } from "react-toastify";
 import ProtectedAdminRoute from "./components/protectedAdminRoute";
 
@@ -29,6 +30,7 @@ function App() {
             <Route path="/interview" element={<AllExperiences />} />
             <Route path="/interview/company-wise" element={<Interview />} />
             <Route path="/interview/:id" element={<ExperienceDetail />} />
+            <Route path="/ai-interview/:company?" element={<AIInterview />} />
             <Route path="/company/:companyName" element={<CompanyDetail />} />
             <Route path="/submit" element={<SubmitExperience />} />
             <Route path="/admin" element={
