@@ -196,7 +196,7 @@ function StatsCard({ data }) {
 function Stat({ icon, label, value, color = "text-blue-900" }) {
   return (
     <div className="text-center">
-      {icon && <div className="flex justify-center mb-1 text-blue-500 text-2xl">{icon}</div>}
+      {icon && <div className={`flex justify-center mb-1 text-2xl ${color}`}>{icon}</div>}
       <div className={`text-3xl font-bold ${color}`}>{value}</div>
       <div className="text-sm text-gray-500">{label}</div>
     </div>
