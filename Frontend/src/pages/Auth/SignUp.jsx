@@ -4,7 +4,7 @@ import Input from "../../components/Inputs/Input";
 import GoogleSigninButton from "../../components/SignInWithGoogle.jsx";
 import { toast } from "react-toastify";
 import { isAllowedEmail, allowedDomain } from "../../utils/allowedDomain";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 export default function SignUp({ setCurrentPage, onSuccess }) {
   const [fullName, setFullName] = useState("");

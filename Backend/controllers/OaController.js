@@ -2,52 +2,78 @@ const OAQuestion = require("../models/OAQuestion");
 
 /* GET /oa/companies
    → ["Adobe","Amazon",…]  */
-const getCompanies = async (_req, res) => {
+const getCompanies = async (req, res) => {
   try {
-    const companies = await OAQuestion.distinct("company");
-    res.json(companies.sort());            // ✅ pure array
+    const { difficulty } = req.query; 
+    const match = { approved: true };
+    if (["Easy","Medium","Hard"].includes(difficulty)) {
+      match.difficulty = difficulty;
+    }
+    const companies = await OAQuestion.distinct("company", match);
+    res.json(companies.sort());
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-/* GET /oa/:company
-   → [{ year, role, question, detail }, …] */
+/* GET  /oa/:company?difficulty=Hard
+   -> [{ year, role, question, detail, difficulty }, …] */
 const getQuestionsByCompany = async (req, res) => {
   try {
-    const company   = decodeURIComponent(req.params.company);
-    const questions = await OAQuestion.find({ company , approved: true })
-      .select("year role question detail -_id")
+    const company    = decodeURIComponent(req.params.company);
+    const { difficulty } = req.query;
+
+    const match = { company, approved: true };
+    if (["Easy","Medium","Hard"].includes(difficulty)) {
+      match.difficulty = difficulty;
+    }
+
+    const questions = await OAQuestion.find(match)
+      .select("year role question detail difficulty -_id")
       .sort({ year: -1 })
       .exec();
 
-    res.json(questions);                   
+    res.json(questions);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-/* POST /api/oa/bulk  – one form submits multiple questions at once */
+/* POST /oa/bulk — store difficulty already present in req.body.questions */
 const bulkCreate = async (req, res) => {
   try {
     const { company, role, year, questions } = req.body;
+
+    // Validate request
     if (!company || !role || !year || !Array.isArray(questions) || !questions.length) {
       return res.status(400).json({ message: "Invalid payload." });
     }
 
-    const docs = questions.map((q) => ({
-      company,
-      role,
-      year,
-      question:    q.question,
-      options:     q.options?.filter(Boolean), // strip empty strings
-      answer:      q.answer,
-      explanation: q.explanation,
-    }));
+    console.log("📩 Received questions for:", company, role, year);
+    console.log("🧮 Total questions received:", questions.length);
 
+    // Prepare documents
+    const docs = questions.map((q, i) => {
+      console.log(`📄 Q${i + 1} difficulty:`, q.difficulty);
+      return {
+        company,
+        role,
+        year,
+        question: q.question,
+        options: q.options?.filter(Boolean),
+        answer: q.answer,
+        explanation: q.explanation,
+        difficulty: q.difficulty || null,
+      };
+    });
+
+    // Insert to MongoDB
     const created = await OAQuestion.insertMany(docs);
+    console.log("✅ Inserted count:", created.length);
+
     res.status(201).json({ inserted: created.length });
   } catch (err) {
+    console.error("❌ Bulk insert failed:", err);
     res.status(400).json({ message: err.message });
   }
 };

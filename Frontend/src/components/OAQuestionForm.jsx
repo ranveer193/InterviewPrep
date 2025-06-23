@@ -1,16 +1,17 @@
 import { useState } from "react";
 import axios from "axios";
-import { toast } from "react-toastify";      // ⬅️ only toast, no ToastContainer
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// 👇 static list of companies
 import COMPANIES from "../constants/CompanyNames";
 
+/* helper to start a blank q‑object */
 const emptyQuestion = () => ({
   question: "",
   options: ["", "", "", ""],
   answer: "",
   explanation: "",
+  difficulty: "",               // 🆕 will be filled by AI
 });
 
 export default function OAQuestionForm({ onClose, isAnonymous }) {
@@ -55,11 +56,27 @@ export default function OAQuestionForm({ onClose, isAnonymous }) {
 
     try {
       setSubmitting(true);
+
+      /* ---------- 1. auto‑classify each question ---------- */
+      const classified = await Promise.all(
+        questions.map(async (q) => {
+          try {
+            const { data } = await axios.post("http://localhost:5000/ai/classify", {
+              question: q.question,
+            });
+            return { ...q, difficulty: data.difficulty || "" };
+          } catch {
+            return { ...q, difficulty: "" }; // default if AI fails
+          }
+        })
+      );
+
+      /* ---------- 2. save to OA bulk route ---------- */
       await axios.post("http://localhost:5000/oa/bulk", {
         company,
         role,
         year: Number(year),
-        questions,
+        questions: classified,
         anonymous: isAnonymous,
       });
 
@@ -68,12 +85,12 @@ export default function OAQuestionForm({ onClose, isAnonymous }) {
         autoClose: 2500,
       });
 
+      /* reset */
       setCompany("");
       setRole("");
       setYear("");
       setQuestions([emptyQuestion()]);
-
-      if (onClose) setTimeout(onClose, 1200); // delay close to let toast show
+      if (onClose) setTimeout(onClose, 1200);
     } catch (err) {
       const msg = err.response?.data?.message || err.message;
       toast.error(`Save failed: ${msg}`, { position: "top-center" });
@@ -82,7 +99,7 @@ export default function OAQuestionForm({ onClose, isAnonymous }) {
     }
   };
 
-  /* ---------------- UI ---------------- */
+  /* ---------------- UI (unchanged except new difficulty tag) ---------------- */
   return (
     <form
       onSubmit={handleSubmit}
@@ -135,6 +152,13 @@ export default function OAQuestionForm({ onClose, isAnonymous }) {
             onChange={(e) => handleChange(idx, "question", e.target.value)}
             placeholder="Paste the OA question…"
           />
+
+          {/* difficulty tag (read‑only after AI) */}
+          {q.difficulty && (
+            <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700">
+              {q.difficulty}
+            </span>
+          )}
 
           <label className="block font-semibold mt-3">Options (optional)</label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">

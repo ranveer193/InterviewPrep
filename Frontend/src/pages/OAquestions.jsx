@@ -5,7 +5,6 @@ import Modal from "../components/Modal";
 import OAQuestionForm from "../components/OAQuestionForm";
 import axios from "axios";
 
-import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import Login from "./Auth/Login";
@@ -119,6 +118,11 @@ export default function OAquestions() {
       <h1 className="text-3xl font-bold text-blue-800 mb-4 text-center">
         OA Questions by Company
       </h1>
+
+      {/* AI Interview Card - Prominently displayed
+      <div className="mb-8">
+        <AIInterviewCard company="OA Questions" />
+      </div> */}
 
       {/* search */}
       <div className="relative mb-5">
