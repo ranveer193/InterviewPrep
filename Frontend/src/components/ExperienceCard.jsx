@@ -51,20 +51,14 @@ export default function ExperienceCard({ exp, onUpvote }) {
       setUpvotes(res.data.upvotes);
       setIsUpvoted(res.data.upvoted);
 
-      // 🔥 New line: notify parent if callback is passed
       if (onUpvote) onUpvote(res.data.updatedExperience || { ...exp, upvotes: res.data.upvotes });
 
-      if (res.data.upvoted) {
-        toast.success("Upvoted!", { autoClose: 1500 });
-      } else {
-        toast.success("Upvote removed.", { autoClose: 1500 });
-      }
+      toast.success(res.data.upvoted ? "Upvoted!" : "Upvote removed.", { autoClose: 1500 });
     } catch (err) {
       console.error("Upvote failed:", err);
-      toast.error(
-        err.response?.data?.error || "Something went wrong while upvoting.",
-        { autoClose: 1500 }
-      );
+      toast.error(err.response?.data?.error || "Something went wrong while upvoting.", {
+        autoClose: 1500,
+      });
     }
   };
 
@@ -82,8 +76,8 @@ export default function ExperienceCard({ exp, onUpvote }) {
   };
 
   return (
-    <Link to={`/interview/${exp._id}`} className="block">
-      <div className="bg-white border border-blue-200 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 group">
+    <Link to={`/interview/${exp._id}`} className="block h-full">
+      <div className="bg-white border border-blue-200 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -93,11 +87,7 @@ export default function ExperienceCard({ exp, onUpvote }) {
             </span>
           </div>
           {exp.difficulty && (
-            <span
-              className={`text-xs font-medium px-3 py-1 rounded-full ${getDifficultyColor(
-                exp.difficulty
-              )}`}
-            >
+            <span className={`text-xs font-medium px-3 py-1 rounded-full ${getDifficultyColor(exp.difficulty)}`}>
               {exp.difficulty}
             </span>
           )}
@@ -106,12 +96,12 @@ export default function ExperienceCard({ exp, onUpvote }) {
         {/* Title and user */}
         <div className="mb-4">
           <h3 className="text-lg font-bold text-blue-900 mb-2">
-            {exp.roleApplied || exp.role}
+            {exp.roleApplied || exp.role || "Intern"}
           </h3>
           <div className="flex items-center gap-4 text-sm text-gray-600">
             <div className="flex items-center gap-1">
               <FaUser className="text-gray-400" />
-              <span>{exp.name}</span>
+              <span>{exp.name || "Anonymous"}</span>
             </div>
             {exp.experience && (
               <div className="flex items-center gap-1">
@@ -122,36 +112,33 @@ export default function ExperienceCard({ exp, onUpvote }) {
           </div>
         </div>
 
-        {/* Description */}
-        <div className="mb-4">
-          <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed">
-            {exp.description ||
-              exp.content?.slice(0, 150) ||
-              "No description available."}
+        {/* Description + Tags */}
+        <div className="flex-grow">
+          <p className="text-sm text-gray-600 mb-4 line-clamp-4 leading-relaxed">
+            {exp.description || exp.content?.slice(0, 150) || "No description available."}
           </p>
+
+          <div className="flex flex-wrap gap-2 mb-4">
+            {exp.mode && (
+              <span className="text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
+                {exp.mode}
+              </span>
+            )}
+            {exp.applicationMode && (
+              <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">
+                {exp.applicationMode}
+              </span>
+            )}
+            {exp.salary && (
+              <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                {exp.salary}
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Tags */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {exp.mode && (
-            <span className="text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
-              {exp.mode}
-            </span>
-          )}
-          {exp.applicationMode && (
-            <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">
-              {exp.applicationMode}
-            </span>
-          )}
-          {exp.salary && (
-            <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
-              {exp.salary}
-            </span>
-          )}
-        </div>
-
-        {/* Upvote */}
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-auto">
           <button
             onClick={handleUpvote}
             className={`flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-all duration-200
@@ -161,11 +148,7 @@ export default function ExperienceCard({ exp, onUpvote }) {
                   : "bg-blue-100 text-blue-700 hover:bg-blue-200"
               }`}
           >
-            <FaThumbsUp
-              className={
-                isUpvoted ? "text-green-600" : "text-blue-600"
-              }
-            />
+            <FaThumbsUp className={isUpvoted ? "text-green-600" : "text-blue-600"} />
             {upvotes} {upvotes === 1 ? "upvote" : "upvotes"}
           </button>
 
