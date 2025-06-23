@@ -3,10 +3,7 @@ const mongoose = require("mongoose");
 const mockInterviewSchema = new mongoose.Schema(
   {
     /* Who is taking the mock interview */
-    userId: {
-      type: String, // Firebase UID or "anonymous"
-      required: true,
-    },
+    userId: { type: String, required: true }, // Firebase UID or “anonymous”
 
     /* OA questions served to the candidate */
     questions: [
@@ -14,18 +11,20 @@ const mockInterviewSchema = new mongoose.Schema(
         text: String,
         category: String,
 
-        // NEW fields per question
         transcription: { type: String, default: "" },
-        summary: { type: String, default: "" },
-        rating: { type: Number, default: null },
+        summary:       { type: String, default: "" },
+        rating:        { type: Number, default: null },
+
+        /* Per-question analysis objects */
         analysis: {
-          speech: { type: mongoose.Schema.Types.Mixed, default: {} }, // pauses, speed, etc.
-          video: { type: mongoose.Schema.Types.Mixed, default: {} },  // eye contact, nods (optional)
+          speech:     { type: mongoose.Schema.Types.Mixed, default: {} }, // pauses, WPM…
+          video:      { type: mongoose.Schema.Types.Mixed, default: {} }, // eye contact…
+          voiceCoach: { type: mongoose.Schema.Types.Mixed, default: {} }, // NEW – delivery
         },
       },
     ],
 
-    /* Optional video storage — now unused */
+    /* (Unused now) */
     videoUrl: { type: String, default: "" },
   },
   { timestamps: true }

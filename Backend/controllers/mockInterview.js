@@ -3,8 +3,7 @@ const MockInterview = require("../models/mockInterview");
 const OAQuestion    = require("../models/OAQuestion");
 const { getRandomElements } = require("../utils/random");
 const { askLLM }            = require("../utils/openRouter");
-const analyzeTranscriptUtil = require("../utils/analyzeTranscript");
-const analyzeSpeech         = require("../utils/analyzeSpeech");
+const analyzeVoiceCoach = require("../utils/analyzeVoiceCoach");
 const extractAudio          = require("../utils/extractAudio");
 require("dotenv").config();
 
@@ -19,7 +18,7 @@ const createMockInterview = async (req, res) => {
     if (pool.length < 1) return res.status(400).json({ error: "No questions" });
 
     /* 👉 Decide number of questions here */
-    const TOTAL_Q = 2;                           
+    const TOTAL_Q = 1;                           
     const picked  = getRandomElements(pool, TOTAL_Q).map((q) => ({
       text:           q.question,
       category:       q.topic || "General",
@@ -74,8 +73,10 @@ const transcribeVideo = async (req, res) => {
     console.log(`[${ts()}] 📝 transcript OK (len=${transcript.length})`);
     console.log(`[${ts()}] 🔍 transcript value:`, transcript);
 
-    // 3. analyze speech
-    const speech = analyzeSpeech(transcript);
+     /* ───── 3. delivery analysis (voice coach) ───── */
+    const voiceCoach = analyzeVoiceCoach(transcript);   // fast, sync
+    const coachSummary = voiceCoach.coachSummary;
+    console.log(`[${ts()}] 🗣️  voice-coach →`, voiceCoach);
 
     // 4. generate summary + rating with improved prompt
     const prompt = `
@@ -87,6 +88,9 @@ const transcribeVideo = async (req, res) => {
 
       Transcript of candidate’s answer:
       ${transcript}
+
+      Interview Delivery Analysis:
+      ${coachSummary}
       ——————————
 
       Please do **all** of the following:
@@ -139,7 +143,7 @@ const transcribeVideo = async (req, res) => {
       [`questions.${idx}.transcription`]: transcript,
       [`questions.${idx}.summary`]      : summary,
       [`questions.${idx}.rating`]       : rating,
-      [`questions.${idx}.analysis.speech`]: speech,
+      [`questions.${idx}.analysis.voiceCoach`] : voiceCoach  
     };
     await MockInterview.findByIdAndUpdate(interviewId, { $set: payload });
 
