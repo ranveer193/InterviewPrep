@@ -11,6 +11,7 @@ import Modal from "../components/Modal";
 import Login from "./Auth/Login";
 import SignUp from "./Auth/SignUp";
 import { useAuth } from "../context/AuthContext";
+import AIInterviewCard from "../components/AIInterviewCard";
 
 export default function Home() {
   const [experiences, setExperiences] = useState([]);
@@ -69,7 +70,7 @@ export default function Home() {
       </section>
 
       {/* how it works */}
-      <section className="bg-gray-300 bg-opacity-80 py-16 px-6 md:px-20">
+      <section className="bg-white-300 bg-opacity-80 py-16 px-6 md:px-20">
         <h1 className="text-5xl font-bold text-center text-black mb-12">
           How it works!
         </h1>
@@ -100,6 +101,12 @@ export default function Home() {
           </video>
         </div>
       </section>
+
+      {/* AI Interview Card */}
+      <div className="mb-8">
+        <AIInterviewCard />
+      </div>
+      
 
       {/* recent experiences */}
       <section

@@ -4,7 +4,6 @@ import HeroBanner from "../components/HeroBanner";
 import ExperienceCard from "../components/ExperienceCard";
 import SearchFilters from "../components/FilterTabs";
 import DifficultyFilter from "../components/DifficultyFilter";
-import AIInterviewCard from "../components/AIInterviewCard";
 
 export default function Home() {
   const [experiences, setExperiences] = useState([]);
@@ -55,11 +54,6 @@ export default function Home() {
             <option value="latest">Sort by: Latest</option>
             <option value="upvotes">Sort by: Upvotes</option>
           </select>
-        </div>
-
-        {/* AI Interview Card - Prominently displayed */}
-        <div className="mb-8">
-          <AIInterviewCard />
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import HeroBanner from "../components/HeroBanner";
 import CompanyCard from "../components/CompanyCard";
-import AIInterviewCard from "../components/AIInterviewCard";
 
 export default function Interview() {
   const [experiences, setExperiences] = useState([]);
@@ -84,10 +83,6 @@ export default function Interview() {
       />
 
       <div className="px-4 max-w-6xl mx-auto py-8">
-        {/* AI Interview Card */}
-        <div className="mb-8">
-          <AIInterviewCard />
-        </div>
 
         <h2 className="text-2xl font-semibold text-blue-900 mb-1">Companies</h2>
         <p className="text-sm text-blue-700 mb-5">
