@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus } from "lucide-react";
 import Modal from "../components/Modal";
 import OAQuestionForm from "../components/OAQuestionForm";
-//import AIInterviewCard from "../components/AIInterviewCard";
 import axios from "axios";
 
 import "react-toastify/dist/ReactToastify.css";
