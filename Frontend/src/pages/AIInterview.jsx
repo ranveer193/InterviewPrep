@@ -81,7 +81,7 @@ export default function AIInterviewPage() {
   /* ───────── navigate once summary ready ───────── */
   useEffect(() => {
     if (session.status === "done") {
-      navigate("/profile#interviews");
+      navigate("/profile/interviews");
     }
   }, [session.status, navigate]);
 
