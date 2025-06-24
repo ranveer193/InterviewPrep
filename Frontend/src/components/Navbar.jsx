@@ -135,7 +135,7 @@ export default function Navbar() {
                       </Link>
 
                       <Link
-                        to="/profile#interviews"
+                        to="/profile/interviews"
                         className="flex items-center gap-2 px-4 py-2 hover:bg-blue-50"
                         onClick={() => setProfileOpen(false)}
                       >
@@ -158,13 +158,17 @@ export default function Navbar() {
                       <span className="text-sm font-medium text-gray-700">Leaderboard</span>
                       </Link>
 
-                      <button
-                        onClick={() => { toggleTheme(); setProfileOpen(false); }}
-                        className="flex w-full items-center gap-2 px-4 py-2 hover:bg-blue-50"
+                      <Link
+                        to="/interview-goal"
+                        className="flex items-center gap-2 px-4 py-2 hover:bg-blue-50"
+                        onClick={() => setProfileOpen(false)}
                       >
-                        <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a.75.75 0 01.75.75V4a.75.75 0 01-1.5 0V2.75A.75.75 0 0110 2zm5.657 2.343a.75.75 0 011.06 1.06l-1.06 1.06a.75.75 0 11-1.06-1.06l1.06-1.06zM18 10a.75.75 0 01-.75.75H16a.75.75 0 010-1.5h1.25A.75.75 0 0118 10zm-2.343 5.657a.75.75 0 10-1.06-1.06l-1.06 1.06a.75.75 0 101.06 1.06l1.06-1.06zM10 16a.75.75 0 01.75.75V18a.75.75 0 01-1.5 0v-1.25A.75.75 0 0110 16zM4.343 15.657a.75.75 0 01-1.06-1.06l1.06-1.06a.75.75 0 111.06 1.06l-1.06 1.06zM2 10a.75.75 0 01.75-.75H4a.75.75 0 010 1.5H2.75A.75.75 0 012 10zm2.343-5.657a.75.75 0 101.06 1.06L4.343 6.46a.75.75 0 00-1.06-1.06l1.06-1.06z"/></svg>
-                        Toggle Theme
-                      </button>
+                      <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M6 2a1 1 0 00-1 1v1h10V3a1 1 0 00-1-1H6z" />
+                      <path d="M4 6h12v10a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm3 3a1 1 0 000 2h6a1 1 0 000-2H7z" />
+                      </svg>
+                            Schedule Interview
+                      </Link>
 
                       {isAdmin && (
                         <Link

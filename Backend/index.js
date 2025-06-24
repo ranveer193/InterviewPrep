@@ -30,12 +30,16 @@ const interviewRoutes = require("./routes/interview");
 const oaRoutes = require("./routes/oa");
 const mockInterviewRoutes = require("./routes/mockInterview"); // 🆕 added
 const analyzeRoute = require("./routes/analyzeResumePdf");
+const interviewGoalRoutes = require("./routes/interviewGoalRoutes"); // 🆕 added
+import aiRoutes from "./routes/aiRoutes"; // 🆕 added
 
 // 🧩 Route usage
 app.use("/interview", interviewRoutes);
 app.use("/oa", oaRoutes);
 app.use("/mockInterview", mockInterviewRoutes); // 🆕 added
+app.use("/ai", aiRoutes); // 🆕 added
 app.use(analyzeRoute);
+app.use("/interview-goal", interviewGoalRoutes); // 🆕 added
 
 // 🧪 Test Route
 app.get("/", (req, res) => {

@@ -19,6 +19,9 @@ import ProfileInterviews from "./pages/ProfileInterviews";
 import InterviewSummaryPage from "./pages/InterviewSummaryPage";
 import Leaderboard from "./components/Leaderboard";
 import FinalScreen from "./components/FinalScreen";
+import InterviewGoal from "./pages/interview-goal";
+import Profile from "./pages/Profile";
+import ProtectedUserRoute from "./components/ProtectedUserRoute";
 
 function App() {
   return (
@@ -31,7 +34,33 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/submit-oa" element={<SubmitOAQuestion />} />
             <Route path="/interview" element={<AllExperiences />} />
-            <Route path="/resume-analyzer" element={<ResumeAnalyzer />} />
+            <Route
+              path="/resume-analyzer"
+              element={
+                <ProtectedUserRoute>
+                  <ResumeAnalyzer />
+                </ProtectedUserRoute>
+              }
+            />
+
+            <Route
+              path="/interview-goal/:id"
+              element={
+                <ProtectedUserRoute>
+                  <InterviewGoal />
+                </ProtectedUserRoute>
+              }
+            />
+
+            <Route
+              path="/interview-goal"
+              element={
+                <ProtectedUserRoute>
+                  <InterviewGoal />
+                </ProtectedUserRoute>
+              }
+            />
+            
             <Route path="/interview/company-wise" element={<Interview />} />
             <Route path="/interview/:id" element={<ExperienceDetail />} />
 
@@ -39,15 +68,46 @@ function App() {
             <Route
               path="/ai-interview/:company?"
               element={
+                <ProtectedUserRoute>
                   <AIInterview />
+                </ProtectedUserRoute>
               }
             />
 
             <Route path="/company/:companyName" element={<CompanyDetail />} />
             <Route path="/submit" element={<SubmitExperience />} />
-            <Route path="/profile" element={<ProfileInterviews />} />
-            <Route path="/mockinterview/submitted" element={<FinalScreen />} />
-            <Route path="/mockinterview/:id" element={<InterviewSummaryPage />} />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedUserRoute>
+                  <Profile />
+                </ProtectedUserRoute>
+              } 
+            />
+            <Route 
+              path="/profile/interviews" 
+              element={
+                <ProtectedUserRoute>
+                  <ProfileInterviews />
+                </ProtectedUserRoute>
+              } 
+            />
+            <Route 
+              path="/mockinterview/submitted" 
+              element={
+                <ProtectedUserRoute>
+                  <FinalScreen />
+                </ProtectedUserRoute>
+              } 
+            />
+            <Route 
+              path="/mockinterview/:id" 
+              element={
+                <ProtectedUserRoute>
+                  <InterviewSummaryPage />
+                </ProtectedUserRoute>
+              } 
+            />
             <Route path="/leaderboard" element={<Leaderboard />} />
 
             {/* 🔒  Admin route already protected */}
