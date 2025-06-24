@@ -18,7 +18,7 @@ export default function InterviewSummaryPage() {
         setData(data.interview);
       } catch {
         toast.error("Failed to fetch interview summary.");
-        navigate("/profile#interviews");
+        navigate("/profile/interviews");
       } finally {
         setLoading(false);
       }

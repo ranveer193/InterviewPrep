@@ -32,8 +32,8 @@ export default function OACompanyWise() {
     setError(null);
     const url =
       difficultyFilter === "All"
-        ? `http://localhost:5000/oa/${encodeURIComponent(companyName)}`
-        : `http://localhost:5000/oa/${encodeURIComponent(companyName)}?difficulty=${difficultyFilter}`;
+        ? `https://interviewprep-backend-5os4.onrender.com/oa/${encodeURIComponent(companyName)}`
+        : `https://interviewprep-backend-5os4.onrender.com/oa/${encodeURIComponent(companyName)}?difficulty=${difficultyFilter}`;
     try {
       const { data } = await axios.get(url);
       setRaw(Array.isArray(data) ? data : []);

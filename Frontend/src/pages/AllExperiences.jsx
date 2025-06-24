@@ -25,7 +25,7 @@ export default function Home() {
       params.append("limit", pageSize);
 
       try {
-        const res = await axios.get(`http://localhost:5000/interview?${params.toString()}`);
+        const res = await axios.get(`https://interviewprep-backend-5os4.onrender.com/interview?${params.toString()}`);
         setExperiences(res.data.data);
         setTotalPages(res.data.totalPages);
       } catch (err) {

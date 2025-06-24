@@ -6,7 +6,7 @@ export default function FinalScreen() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigate("/profile#interviews");
+      navigate("/profile/interviews");
     }, 10000);
 
     return () => clearTimeout(timer);
@@ -33,7 +33,7 @@ export default function FinalScreen() {
           Go to Home
         </button>
         <button
-          onClick={() => navigate("/profile#interviews")}
+          onClick={() => navigate("/profile/interviews")}
           className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg"
         >
           View My Interviews

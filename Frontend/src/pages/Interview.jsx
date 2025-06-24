@@ -21,7 +21,7 @@ export default function Interview() {
         limit,
       }).toString();
 
-      const res = await axios.get(`http://localhost:5000/interview?${params}`);
+      const res = await axios.get(`https://interviewprep-backend-5os4.onrender.com/interview?${params}`);
       const rows = Array.isArray(res.data) ? res.data : res.data.data;
 
       setExperiences(rows);

@@ -22,7 +22,7 @@ export default function Home() {
   /* fetch latest 3 */
   useEffect(() => {
     axios
-      .get("http://localhost:5000/interview?limit=3&sort=latest")
+      .get("https://interviewprep-backend-5os4.onrender.com/interview?limit=3&sort=latest")
       .then((res) =>
         setExperiences(res.data.data || res.data.slice?.(0, 3) || [])
       )

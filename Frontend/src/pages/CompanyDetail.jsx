@@ -30,7 +30,7 @@ export default function CompanyDetail() {
       });
       if (difficultyFilter !== "All") params.append("difficulty", difficultyFilter);
 
-      const res = await axios.get(`http://localhost:5000/interview?${params.toString()}`);
+      const res = await axios.get(`https://interviewprep-backend-5os4.onrender.com/interview?${params.toString()}`);
       const rows = res.data?.data || [];
       setExperiences(rows);
       setTotalPages(res.data?.totalPages || 1);
