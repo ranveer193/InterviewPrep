@@ -9,7 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 import Login from "./Auth/Login";
 import SignUp from "./Auth/SignUp";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContext";
 
 export default function OAquestions() {
   const [companyList, setCompanyList] = useState([]);

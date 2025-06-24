@@ -10,7 +10,7 @@ import howItWorksVideo from "../assets/hero-video.mp4";
 import Modal from "../components/Modal";
 import Login from "./Auth/Login";
 import SignUp from "./Auth/SignUp";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContext";
 import CountdownWidget from "../components/CountdownWidget";
 
 export default function Home() {
