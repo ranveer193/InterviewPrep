@@ -9,7 +9,7 @@ import SignUp from "../pages/Auth/SignUp";
 import PostPreferenceForm from "./PostPreferenceModal";
 
 import useAdminStatus from "../hooks/useAdminStatus";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContext";
 
 /* Dummy theme toggle — wire to your own context */
 const toggleTheme = () => document.documentElement.classList.toggle("dark");
