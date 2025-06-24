@@ -11,15 +11,16 @@ import Modal from "../components/Modal";
 import Login from "./Auth/Login";
 import SignUp from "./Auth/SignUp";
 import { useAuth } from "../context/authContext";
-import CountdownWidget from "../components/CountdownWidget";
+import CountdownWidget from "../components/CountdownWidget"; // ✅ OK
+import { useInterviewGoal } from "../hooks/useInterviewGoal"; // ✅ ADD THIS
 
 export default function Home() {
   const [experiences, setExperiences] = useState([]);
   const [openAuthModal, setOpenAuthModal] = useState(false);
   const [currentPage, setCurrentPage] = useState("login");
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth(); // ✅ include auth loading
+  const { goal, loading: goalLoading } = useInterviewGoal(); // ✅ load goal if needed
 
-  /* fetch latest 3 */
   useEffect(() => {
     axios
       .get("https://interviewprep-backend-5os4.onrender.com/interview?limit=3&sort=latest")
@@ -37,7 +38,11 @@ export default function Home() {
   /* ------------------------------------------------------------------ */
   return (
     <div className="text-gray-800">
-      <CountdownWidget iconOnly/>
+      {/* ✅ Only show CountdownWidget if user is logged in and goal is present */}
+      {user && !goalLoading && goal && (
+        <CountdownWidget iconOnly />
+      )}
+
       {/* hero */}
       <section
         className="flex flex-col md:flex-row items-center justify-between px-6 md:px-20 py-6 text-white"
@@ -178,9 +183,15 @@ export default function Home() {
         hideHeader
       >
         {currentPage === "login" ? (
-          <Login  setCurrentPage={setCurrentPage} onSuccess={() => setOpenAuthModal(false)} />
+          <Login
+            setCurrentPage={setCurrentPage}
+            onSuccess={() => setOpenAuthModal(false)}
+          />
         ) : (
-          <SignUp setCurrentPage={setCurrentPage} onSuccess={() => setOpenAuthModal(false)} />
+          <SignUp
+            setCurrentPage={setCurrentPage}
+            onSuccess={() => setOpenAuthModal(false)}
+          />
         )}
       </Modal>
 
