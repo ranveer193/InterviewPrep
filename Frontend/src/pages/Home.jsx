@@ -11,6 +11,7 @@ import Modal from "../components/Modal";
 import Login from "./Auth/Login";
 import SignUp from "./Auth/SignUp";
 import { useAuth } from "../context/AuthContext";
+import CountdownWidget from "../components/CountdownWidget";
 
 export default function Home() {
   const [experiences, setExperiences] = useState([]);
@@ -36,6 +37,7 @@ export default function Home() {
   /* ------------------------------------------------------------------ */
   return (
     <div className="text-gray-800">
+      <CountdownWidget iconOnly/>
       {/* hero */}
       <section
         className="flex flex-col md:flex-row items-center justify-between px-6 md:px-20 py-6 text-white"
