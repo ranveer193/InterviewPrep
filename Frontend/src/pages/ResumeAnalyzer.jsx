@@ -1,4 +1,4 @@
-import ResumeUploadForm from "../components/ResumeUploadForm";
+import ResumeUploadForm from "../components/resumeUploadForm";
 
 export default function ResumeAnalyzer() {
   return (
