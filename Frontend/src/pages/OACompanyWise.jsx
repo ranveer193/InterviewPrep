@@ -2,7 +2,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { ChevronDown, ChevronRight, ArrowLeft } from "lucide-react";
-// import AIInterviewCard from "../components/AIInterviewCard";
 
 /**
  * OACompanyWise – shows all OA questions for a given company
@@ -76,9 +75,6 @@ export default function OACompanyWise() {
       <h1 className="text-3xl font-bold text-blue-800 mb-6 text-center">
         {companyName} – OA Questions
       </h1>
-
-      {/* AI Interview card – Uncomment if you want to promote the feature */}
-      {/* <AIInterviewCard company={companyName} className="mb-8" /> */}
 
       {/* Filter bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
