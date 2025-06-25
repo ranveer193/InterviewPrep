@@ -7,11 +7,14 @@ import {
 } from "react";
 import {
   getAuth,
-  onIdTokenChanged,          // ✅ listen for *token* changes, not just user
+  onIdTokenChanged,
   signOut,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
+  /* ★ NEW ↓ */
+  setPersistence,
+  browserSessionPersistence,
 } from "firebase/auth";
 
 /* ------------------------------------------------------------------ */
@@ -30,29 +33,33 @@ const AuthContext = createContext({
 /* Provider                                                           */
 /* ------------------------------------------------------------------ */
 export function AuthProvider({ children }) {
-  const auth = getAuth();                 // reuse one instance
+  const auth = getAuth();
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // true until first token loads
+  const [loading, setLoading] = useState(true);
 
   /* Subscribe to token changes (fires on sign-in AND token refresh) */
   useEffect(() => {
     const unsub = onIdTokenChanged(auth, (u) => {
-      setUser(u);                         // u is null when signed-out
+      setUser(u);
       setLoading(false);
     });
     return () => unsub();
   }, [auth]);
 
   /* ------------------------------------ */
-  /* Auth helpers (memoised)              */
+  /* Auth helpers                         */
   /* ------------------------------------ */
   const login = useCallback(
-    (email, password) => signInWithEmailAndPassword(auth, email, password),
+    (email, password) =>
+      setPersistence(auth, browserSessionPersistence).then(() =>
+        signInWithEmailAndPassword(auth, email, password)
+      ),
     [auth]
   );
 
   const signup = useCallback(
     async (fullName, email, password) => {
+      await setPersistence(auth, browserSessionPersistence);       /* ★ NEW */
       const cred = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -63,22 +70,10 @@ export function AuthProvider({ children }) {
     [auth]
   );
 
-  const logout = useCallback(() => signOut(auth), [auth]);
-
-  /** Always returns a fresh ID token (or null if signed-out) */
+  const logout  = useCallback(() => signOut(auth), [auth]);
   const getToken = useCallback(() => user?.getIdToken(), [user]);
 
-  /* ------------------------------------ */
-  /* Context value                        */
-  /* ------------------------------------ */
-  const value = {
-    user,
-    loading,
-    login,
-    signup,
-    logout,
-    getToken,
-  };
+  const value = { user, loading, login, signup, logout, getToken };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
