@@ -40,7 +40,7 @@ export default function ResumeUploadForm() {
     fd.append("resume", file);
 
     try {
-      const r = await fetch("http://localhost:5000/analyze-resume-pdf", {
+      const r = await fetch("https://interviewprep-backend-5os4.onrender.com/analyze-resume-pdf", {
         method: "POST",
         body: fd,
       });

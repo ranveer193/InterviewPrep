@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  /* ★ NEW ↓ */
+  setPersistence,
+  browserSessionPersistence,
+} from "firebase/auth";
 import { toast } from "react-toastify";
 import googleSignupImg from "../assets/google_signin.png";
 import { auth } from "../firebase";
@@ -15,6 +22,9 @@ export default function GoogleSignInButton({ onSuccess }) {
     const provider = new GoogleAuthProvider();
 
     try {
+      /* ★ NEW → enforce per-tab/session scope */
+      await setPersistence(auth, browserSessionPersistence);
+
       const { user } = await signInWithPopup(auth, provider);
       const email = user?.email || "";
 
@@ -29,7 +39,7 @@ export default function GoogleSignInButton({ onSuccess }) {
       onSuccess ? onSuccess() : navigate("/");
 
     } catch (err) {
-      console.error("Google Sign‑Up error:", err);
+      console.error("Google Sign-Up error:", err);
       toast.error("Something went wrong. Please try again.", { autoClose: 2000 });
     } finally {
       setLoading(false);

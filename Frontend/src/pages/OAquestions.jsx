@@ -9,7 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 import Login from "./Auth/Login";
 import SignUp from "./Auth/SignUp";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContext";
 
 export default function OAquestions() {
   const [companyList, setCompanyList] = useState([]);
@@ -28,7 +28,7 @@ export default function OAquestions() {
   /* fetch list */
   useEffect(() => {
     axios
-      .get("http://localhost:5000/oa/companies")
+      .get("https://interviewprep-backend-5os4.onrender.com/oa/companies")
       .then((res) => setCompanyList(res.data))
       .catch((err) => setError(err.message ?? "Something went wrong"))
       .finally(() => setLoading(false));
@@ -62,7 +62,7 @@ export default function OAquestions() {
         onClose={() => {
           setFormOpen(false);
           axios
-            .get("http://localhost:5000/oa/companies")
+            .get("https://interviewprep-backend-5os4.onrender.com/oa/companies")
             .then((res) => setCompanyList(res.data))
             .catch(() => {});
         }}
@@ -71,7 +71,7 @@ export default function OAquestions() {
           onClose={() => {
             setFormOpen(false);
             axios
-              .get("http://localhost:5000/oa/companies")
+              .get("https://interviewprep-backend-5os4.onrender.com/oa/companies")
               .then((res) => setCompanyList(res.data))
               .catch(() => {});
           }}

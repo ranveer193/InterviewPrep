@@ -15,10 +15,10 @@ const AdminApproval = () => {
       const token = await auth.currentUser?.getIdToken();
 
       const [interviewRes, oaRes] = await Promise.all([
-        axios.get("http://localhost:5000/interview/all", {
+        axios.get("https://interviewprep-backend-5os4.onrender.com/interview/all", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get("http://localhost:5000/oa/all", {
+        axios.get("https://interviewprep-backend-5os4.onrender.com/oa/all", {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -37,7 +37,7 @@ const AdminApproval = () => {
       const token = await auth.currentUser?.getIdToken();
 
       await axios.patch(
-        `http://localhost:5000/${type}/${id}/${action}`,
+        `https://interviewprep-backend-5os4.onrender.com/${type}/${id}/${action}`,
         {},
         {
           headers: {

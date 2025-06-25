@@ -34,7 +34,7 @@ export default function ExperienceDetail() {
   /* ─── fetch experience ─────────────────── */
   useEffect(() => {
     axios
-      .get(`http://localhost:5000/interview/${id}`)
+      .get(`https://interviewprep-backend-5os4.onrender.com/interview/${id}`)
       .then((res) => {
         const exp = res.data;
         setExperience(exp);
@@ -53,7 +53,7 @@ export default function ExperienceDetail() {
     try {
       const token = await user.getIdToken();
       const res = await axios.patch(
-        `http://localhost:5000/interview/${id}/upvote`,
+        `https://interviewprep-backend-5os4.onrender.com/interview/${id}/upvote`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

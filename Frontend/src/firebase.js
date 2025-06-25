@@ -3,12 +3,12 @@ import {getAuth} from 'firebase/auth'
 // import {getFirestore} from 'firebase/firestore'
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC0ERzg5sHdIlNeCVSBV4_jH9hy65UMy_A",
-  authDomain: "interviewsite-1d5bf.firebaseapp.com",
-  projectId: "interviewsite-1d5bf",
-  storageBucket: "interviewsite-1d5bf.firebasestorage.app",
-  messagingSenderId: "197459394543",
-  appId: "1:197459394543:web:e2e029b25e195e17a8001a"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain:import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 export const firebaseApp = initializeApp(firebaseConfig); 

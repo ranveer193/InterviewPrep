@@ -6,9 +6,12 @@ import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 
 export default function InterviewGoal() {
-  const { id } = useParams(); // <-- check if editing
+  const { id } = useParams();               // present when editing
   const navigate = useNavigate();
-  const { getGoal, saveGoal, updateGoal, isLoading } = useInterviewGoal();
+
+  // ✅ latest hook – returns single goal doc + CRUD helpers
+  const { getGoal, saveGoal, updateGoal, saving } = useInterviewGoal();
+
   const {
     register,
     handleSubmit,
@@ -19,31 +22,34 @@ export default function InterviewGoal() {
   const [loadingGoal, setLoadingGoal] = useState(!!id); // only true if editing
   const hasReset = useRef(false);
 
+  /* -------------------------------------------------- */
+  /* Load goal details when editing                     */
+  /* -------------------------------------------------- */
   useEffect(() => {
     if (!id) return;
 
-    const fetchGoal = async () => {
+    (async () => {
       try {
-        const data = await getGoal(id);
-        const goal = data[0];
+        const goal = await getGoal(id);     // ⬅️  returns single object
         if (goal && !hasReset.current) {
           reset({
             company: goal.company,
-            role: goal.role || "",
-            targetDate: goal.targetDate?.split("T")[0] || "",
+            role: goal.role ?? "",
+            targetDate: goal.targetDate?.split("T")[0] ?? "",
           });
           hasReset.current = true;
         }
-      } catch (err) {
+      } catch {
         toast.error("Failed to load interview goal");
       } finally {
         setLoadingGoal(false);
       }
-    };
+    })();
+  }, [id, getGoal, reset]);
 
-    fetchGoal();
-  }, [id, reset, getGoal]);
-
+  /* -------------------------------------------------- */
+  /* Submit                                             */
+  /* -------------------------------------------------- */
   const onSubmit = async (values) => {
     if (!values.company || !values.targetDate) {
       toast.error("Company and interview date are required.");
@@ -63,16 +69,16 @@ export default function InterviewGoal() {
         await saveGoal(payload);
         toast.success("Interview goal saved!");
       }
-
       navigate("/profile");
-    } catch (err) {
+    } catch {
       toast.error("Failed to save goal. Please try again.");
     }
   };
 
-  if (loadingGoal) {
-    return <div className="text-center mt-10">Loading goal...</div>;
-  }
+  /* -------------------------------------------------- */
+  /* UI                                                 */
+  /* -------------------------------------------------- */
+  if (loadingGoal) return <div className="mt-10 text-center">Loading goal…</div>;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
@@ -86,6 +92,7 @@ export default function InterviewGoal() {
         </h1>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Company */}
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Company
@@ -99,6 +106,7 @@ export default function InterviewGoal() {
             />
           </div>
 
+          {/* Role */}
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Role (optional)
@@ -110,6 +118,7 @@ export default function InterviewGoal() {
             />
           </div>
 
+          {/* Interview date */}
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Interview Date
@@ -125,8 +134,8 @@ export default function InterviewGoal() {
 
           <button
             type="submit"
-            disabled={isLoading}
-            className="mt-4 w-full rounded-xl bg-indigo-600 py-3 text-white transition hover:bg-indigo-700"
+            disabled={saving}      // 🆕 clear name
+            className="mt-4 w-full rounded-xl bg-indigo-600 py-3 text-white transition hover:bg-indigo-700 disabled:opacity-60"
           >
             {id ? "Update Goal" : "Save Goal"}
           </button>

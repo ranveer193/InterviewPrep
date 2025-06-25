@@ -43,7 +43,7 @@ export default function ExperienceCard({ exp, onUpvote }) {
       const token = await user.getIdToken();
 
       const res = await axios.patch(
-        `http://localhost:5000/interview/${exp._id}/upvote`,
+        `https://interviewprep-backend-5os4.onrender.com/interview/${exp._id}/upvote`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

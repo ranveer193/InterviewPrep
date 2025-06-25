@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContext";
 
 import CompanyPicker from "../components/CompanyPicker";
 import QuestionCard from "../components/QuestionCard";
@@ -81,7 +81,7 @@ export default function AIInterviewPage() {
   /* ───────── navigate once summary ready ───────── */
   useEffect(() => {
     if (session.status === "done") {
-      navigate("/profile#interviews");
+      navigate("/profile/interviews");
     }
   }, [session.status, navigate]);
 

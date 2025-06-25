@@ -31,7 +31,7 @@ const oaRoutes = require("./routes/oa");
 const mockInterviewRoutes = require("./routes/mockInterview"); // 🆕 added
 const analyzeRoute = require("./routes/analyzeResumePdf");
 const interviewGoalRoutes = require("./routes/interviewGoalRoutes"); // 🆕 added
-import aiRoutes from "./routes/aiRoutes"; // 🆕 added
+const aiRoutes = require("./routes/aiRoutes"); // 🆕 added
 
 // 🧩 Route usage
 app.use("/interview", interviewRoutes);
