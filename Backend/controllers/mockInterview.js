@@ -18,7 +18,7 @@ const createMockInterview = async (req, res) => {
     if (pool.length < 1) return res.status(400).json({ error: "No questions" });
 
     /* 👉 Decide number of questions here */
-    const TOTAL_Q = 1;                           
+    const TOTAL_Q = 2;                           
     const picked  = getRandomElements(pool, TOTAL_Q).map((q) => ({
       text:           q.question,
       category:       q.topic || "General",
