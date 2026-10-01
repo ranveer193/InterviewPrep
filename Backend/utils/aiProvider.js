@@ -10,7 +10,7 @@ const PROVIDERS = [
     name: "groq",
     endpoint: "https://api.groq.com/openai/v1/chat/completions",
     apiKey: process.env.GROQ_API_KEY,
-    model: process.env.GROQ_MODEL || "llama3-8b-8192",
+    model: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
     timeout: 15000,
     headers: {},
   },

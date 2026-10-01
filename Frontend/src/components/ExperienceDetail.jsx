@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
 import {
   FaThumbsUp,
@@ -10,19 +10,25 @@ import {
   FaCode,
   FaGraduationCap,
   FaRegStickyNote,
+  FaTrash,
 } from "react-icons/fa";
 import { onAuthStateChanged } from "firebase/auth";
 import { toast } from "react-toastify";
+import ReactMarkdown from "react-markdown";
 import api from "../services/api";
 import { auth } from "../firebase";
+import useAdminStatus from "../hooks/useAdminStatus";
 
 export default function ExperienceDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [experience, setExperience] = useState(null);
   const [expandedRound, setExpandedRound] = useState(null);
   const [upvotes, setUpvotes] = useState(0);
   const [isUpvoted, setIsUpvoted] = useState(false);
   const [user, setUser] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const { isAdmin } = useAdminStatus();
 
   /* ─── auth track ───────────────────────── */
   useEffect(() => {
@@ -59,6 +65,18 @@ export default function ExperienceDetail() {
       );
     } catch (err) {
       toast.error("Something went wrong while up‑voting.", { autoClose: 1500 });
+    }
+  };
+
+  const handleDelete = async () => {
+    setShowDeleteModal(false);
+    try {
+      await api.patch(`/interview/${id}/reject`, {});
+      toast.success("Experience deleted successfully!");
+      navigate("/interview"); // Go back to experiences list
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete experience.");
     }
   };
 
@@ -128,7 +146,7 @@ export default function ExperienceDetail() {
               </div>
             </div>
 
-            {/* badges & up‑vote */}
+            {/* badges & actions */}
             <div className="flex flex-col items-end gap-2">
               {experience.difficulty && (
                 <span
@@ -139,19 +157,31 @@ export default function ExperienceDetail() {
                   {experience.difficulty}
                 </span>
               )}
-              <button
-                onClick={handleUpvote}
-                className={`flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-colors ${
-                  isUpvoted
-                    ? "bg-green-100 text-green-700 hover:bg-green-200"
-                    : "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                }`}
-              >
-                <FaThumbsUp
-                  className={isUpvoted ? "text-green-600" : "text-blue-600"}
-                />
-                {upvotes} {upvotes === 1 ? "up‑vote" : "up‑votes"}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleUpvote}
+                  className={`flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-colors ${
+                    isUpvoted
+                      ? "bg-green-100 text-green-700 hover:bg-green-200"
+                      : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                  }`}
+                >
+                  <FaThumbsUp
+                    className={isUpvoted ? "text-green-600" : "text-blue-600"}
+                  />
+                  {upvotes} {upvotes === 1 ? "up‑vote" : "up‑votes"}
+                </button>
+                {isAdmin && (
+                  <button
+                    onClick={() => setShowDeleteModal(true)}
+                    className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+                    title="Delete Experience (Admin Only)"
+                  >
+                    <FaTrash className="text-red-600" />
+                    Delete
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -220,8 +250,8 @@ export default function ExperienceDetail() {
             <h2 className="flex items-center gap-2 text-xl font-bold text-green-800 mb-4">
               <FaRegStickyNote /> Quick Summary
             </h2>
-            <div className="text-gray-700 whitespace-pre-line leading-relaxed">
-              {experience.summary}
+            <div className="text-gray-700 leading-relaxed prose max-w-none prose-blue">
+              <ReactMarkdown>{experience.summary}</ReactMarkdown>
             </div>
           </div>
         )}
@@ -337,6 +367,34 @@ export default function ExperienceDetail() {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 animate-fadeInUp">
+            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <FaTrash className="text-red-600" /> Confirm Deletion
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to permanently delete this interview experience? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 font-medium transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

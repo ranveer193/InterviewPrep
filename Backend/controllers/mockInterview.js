@@ -47,8 +47,12 @@ const createMockInterview = async (req, res) => {
         { text: "Explain the difference between SQL and NoSQL databases and when to use each.", category: "Technical" },
         { text: "How do you optimize a slow-performing web application?", category: "Technical" },
         { text: "Tell me about a time you missed a deadline and how you handled it.", category: "Behavioral" },
-        { text: "Describe your experience with CI/CD pipelines.", category: "Technical" },
-        { text: "What are the key principles of object-oriented programming?", category: "Technical" },
+        { text: "Given an array of integers, return indices of the two numbers such that they add up to a specific target.", category: "DSA - Arrays" },
+        { text: "Explain how you would reverse a linked list and discuss the time and space complexity.", category: "DSA - Linked Lists" },
+        { text: "Describe an algorithm to find the longest substring without repeating characters.", category: "DSA - Strings" },
+        { text: "How would you implement a breadth-first search (BFS) on a graph or tree?", category: "DSA - Trees/Graphs" },
+        { text: "Explain the concept of dynamic programming. Can you give an example problem where it is useful?", category: "DSA - Dynamic Programming" },
+        { text: "Describe how to merge two sorted arrays efficiently.", category: "DSA - Sorting" },
       ];
       
       const needed = TOTAL_Q - picked.length;

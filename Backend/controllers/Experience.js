@@ -57,10 +57,21 @@ const submitExperience = async (req, res) => {
     res.status(201).json({ message: "Submitted for review" });
 
     // 🧠 Generate summary in background (non-blocking)
-    if (content.trim()) {
+    let textToSummarize = content.trim();
+    if (data.rounds && data.rounds.length > 0) {
+      textToSummarize += "\n" + data.rounds.map(r => `Round ${r.name}: ${r.description}`).join("\n");
+    }
+    if (data.preparationTips && data.preparationTips.length > 0) {
+      textToSummarize += "\nTips: " + data.preparationTips.join(", ");
+    }
+    if (data.generalAdvice && data.generalAdvice.length > 0) {
+      textToSummarize += "\nAdvice: " + data.generalAdvice.join(", ");
+    }
+
+    if (textToSummarize.trim()) {
       (async () => {
         try {
-          const summary = await getSummary(content);
+          const summary = await getSummary(textToSummarize.trim());
           if (summary) {
             await Experience.findByIdAndUpdate(newExp._id, { summary }).exec();
           }
