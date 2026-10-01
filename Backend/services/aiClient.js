@@ -9,7 +9,7 @@ const BASE_HEADERS = {
   "X-Title": "InterviewPrepAI",
 };
 
-async function chatCompletion(messages, model = "mistralai/mixtral-8x7b-instruct") {
+async function chatCompletion(messages, model = "mistralai/mixtral-8x22b-instruct") {
   try {
     const res = await axios.post(
       ENDPOINT,
