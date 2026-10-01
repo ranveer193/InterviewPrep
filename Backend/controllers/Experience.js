@@ -46,20 +46,29 @@ const submitExperience = async (req, res) => {
       data.submittedBy = req.user.uid;
     }
 
-    // 🧠 Generate summary via OpenRouter
-    console.log("[AI] Generating summary for content:\n", content); // 👈 Log input
-    const summary = await getSummary(content);
-    console.log("[AI] Summary generated:\n", summary); // 👈 Log output
-
     const newExp = new Experience({
       ...data,
       content,
-      summary,
+      summary: "",
       anonymous: !!anonymous,
     });
 
     await newExp.save();
     res.status(201).json({ message: "Submitted for review" });
+
+    // 🧠 Generate summary in background (non-blocking)
+    if (content.trim()) {
+      (async () => {
+        try {
+          const summary = await getSummary(content);
+          if (summary) {
+            await Experience.findByIdAndUpdate(newExp._id, { summary }).exec();
+          }
+        } catch (err) {
+          console.error("[AI] Background summary generation failed:", err.message);
+        }
+      })();
+    }
   } catch (err) {
     console.error("Submission error:", err);
     res.status(500).json({ error: "Server error during submission" });

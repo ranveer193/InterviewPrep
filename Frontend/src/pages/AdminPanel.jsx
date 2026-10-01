@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { getAuth } from "firebase/auth";
+import api from "../services/api";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -11,16 +10,9 @@ const AdminApproval = () => {
 
   const fetchPending = async () => {
     try {
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
-
       const [interviewRes, oaRes] = await Promise.all([
-        axios.get("https://interviewprep-backend-5os4.onrender.com/interview/all", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("https://interviewprep-backend-5os4.onrender.com/oa/all", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+        api.get("/interview/all"),
+        api.get("/oa/all"),
       ]);
       setExperiences(interviewRes.data.filter((exp) => !exp.approved));
       setOaQuestions(oaRes.data.filter((q) => !q.approved));
@@ -33,18 +25,7 @@ const AdminApproval = () => {
 
   const handleAction = async (type, id, action) => {
     try {
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
-
-      await axios.patch(
-        `https://interviewprep-backend-5os4.onrender.com/${type}/${id}/${action}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await api.patch(`/${type}/${id}/${action}`, {});
 
       if (type === "interview") {
         setExperiences((prev) => prev.filter((item) => item._id !== id));

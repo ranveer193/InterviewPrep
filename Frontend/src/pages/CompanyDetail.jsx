@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
-import axios from "axios";
+import { cachedGet } from "../services/api";
 import HeroBanner from "../components/HeroBanner";
 import ExperienceCard from "../components/ExperienceCard";
 import { FaArrowLeft, FaUsers, FaThumbsUp, FaChartLine } from "react-icons/fa";
@@ -30,7 +30,7 @@ export default function CompanyDetail() {
       });
       if (difficultyFilter !== "All") params.append("difficulty", difficultyFilter);
 
-      const res = await axios.get(`https://interviewprep-backend-5os4.onrender.com/interview?${params.toString()}`);
+      const res = await cachedGet(`/interview?${params.toString()}`);
       const rows = res.data?.data || [];
       setExperiences(rows);
       setTotalPages(res.data?.totalPages || 1);

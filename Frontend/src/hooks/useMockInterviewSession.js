@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import api from "../services/api";
 
-export default function useMockInterviewSession(company) {
+export default function useMockInterviewSession(company, numQuestions = 2) {
   /* core state */
   const [interviewId,  setInterviewId]  = useState(null);
   const [questions,    setQuestions]    = useState([]);
@@ -10,7 +10,7 @@ export default function useMockInterviewSession(company) {
   const [statusesPerQ, setStatusesPerQ] = useState([]);          // idle | processing | done | error
   const [result,       setResult]       = useState(null);
 
-  const [movingToNext, setMovingToNext] = useState(false);       // ui‑spinner flag
+  const [movingToNext, setMovingToNext] = useState(false);       // brief transition flag
 
   const pollRef = useRef(null);
 
@@ -20,7 +20,7 @@ export default function useMockInterviewSession(company) {
 
     (async () => {
       try {
-        const { data } = await api.post("/mockInterview/create", { company });
+        const { data } = await api.post("/mockInterview/create", { company, numQuestions });
         setInterviewId(data.interviewId);
         setQuestions(data.questions.map((q) => q.text));
         const total = data.totalQ ?? data.questions.length;
@@ -32,7 +32,7 @@ export default function useMockInterviewSession(company) {
     })();
   }, [company]);
 
-  /* ───────── poll /status every 5 s ───────── */
+  /* ───────── poll /status every 2 s for responsive async updates ───────── */
   useEffect(() => {
     if (!interviewId) return;
 
@@ -42,45 +42,63 @@ export default function useMockInterviewSession(company) {
         const newStatuses = Array.isArray(data) ? data : data.statuses;
         if (Array.isArray(newStatuses)) setStatusesPerQ(newStatuses);
       } catch {/* ignore polling failures */ }
-    }, 5000);
+    }, 2000);
 
     return () => clearInterval(pollRef.current);
   }, [interviewId]);
 
-  /* ───────── upload an answer ───────── */
+  /* ───────── upload/submit an answer (Async AI processing) ───────── */
   const submitAnswer = useCallback(
-    async (blob, metrics = null) => {
-      if (!interviewId || !blob) return;
+    async (payload) => {
+      if (!interviewId) return;
 
       setStatus("uploading");
       setMovingToNext(true);
 
-      // optimistic status update
+      const targetIndex = current;
+
+      // Optimistic status update to processing
       setStatusesPerQ((prev) => {
         const next = [...prev];
-        next[current] = "processing";
+        next[targetIndex] = "processing";
         return next;
       });
 
       try {
-        const form = new FormData();
-        form.append("video", blob, `answer-${Date.now()}.webm`);
-        form.append("index",        current);
-        form.append("questionText", questions[current]);
-        if (metrics) form.append("metrics", JSON.stringify(metrics));
+        const blob = payload?.blob || payload;
+        const transcript = payload?.transcript || "";
+        const audioDurationSeconds = payload?.audioDurationSeconds || 0;
 
-        await api.post(`/mockInterview/${interviewId}/transcribe`, form, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        if (blob) {
+          // Send video/audio with browser transcript as fallback
+          const form = new FormData();
+          form.append("video", blob, `answer-${Date.now()}.webm`);
+          form.append("index", targetIndex);
+          form.append("questionText", questions[targetIndex] || "");
+          form.append("transcript", transcript.trim());
+          form.append("audioDurationSeconds", audioDurationSeconds);
 
-        // go to next question
+          await api.post(`/mockInterview/${interviewId}/transcribe`, form, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+        } else if (transcript.trim()) {
+          // Fast transcript path
+          await api.post(`/mockInterview/${interviewId}/submitAnswer`, {
+            index: targetIndex,
+            transcript: transcript.trim(),
+            questionText: questions[targetIndex] || "",
+            audioDurationSeconds,
+          });
+        }
+
+        // Advance to next question immediately - NO LAG for the candidate!
         setCurrent((p) => p + 1);
       } catch (err) {
-        console.error("[useMockInterview] upload error:", err);
+        console.error("[useMockInterview] submission error:", err);
         setStatus("error");
         setStatusesPerQ((prev) => {
           const next = [...prev];
-          next[current] = "error";
+          next[targetIndex] = "error";
           return next;
         });
       } finally {

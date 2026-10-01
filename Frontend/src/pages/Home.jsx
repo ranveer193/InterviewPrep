@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import ExperienceCard from "../components/ExperienceCard";
-import axios from "axios";
+import api from "../services/api";
 import heroImg from "../assets/hero-img.png";
 import howItWorksVideo from "../assets/hero-video.mp4";
 import Modal from "../components/Modal";
@@ -23,8 +23,8 @@ export default function Home() {
   const { goal, loading: goalLoading } = useInterviewGoal(); // ✅ load goal if needed
 
   useEffect(() => {
-    axios
-      .get("https://interviewprep-backend-5os4.onrender.com/interview?limit=3&sort=latest")
+    api
+      .get("/interview?limit=3&sort=latest")
       .then((res) =>
         setExperiences(res.data.data || res.data.slice?.(0, 3) || [])
       )

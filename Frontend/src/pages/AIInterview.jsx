@@ -12,7 +12,7 @@ import Login from "../pages/Auth/Login";
 import SignUp from "../pages/Auth/SignUp";
 import useMockInterviewSession from "../hooks/useMockInterviewSession";
 
-const READ_SEC   = 20;
+const READ_SEC = 20;
 const ANSWER_SEC = 90;
 
 export default function AIInterviewPage() {
@@ -20,7 +20,9 @@ export default function AIInterviewPage() {
   const { company } = useParams();
   const decodedCompany = company ? decodeURIComponent(company) : null;
   const { user } = useAuth();
-  const navigate   = useNavigate();
+  const navigate = useNavigate();
+  const location = window.location;
+  const numQuestions = new URLSearchParams(location.search).get("num") || 2;
 
   /* ───────── auth modal ───────── */
   const [authOpen, setAuthOpen] = useState(false);
@@ -32,58 +34,62 @@ export default function AIInterviewPage() {
 
   /* ───────── interview session ───────── */
   const session = useMockInterviewSession(
-    decodedCompany && user ? decodedCompany : null
+    decodedCompany && user ? decodedCompany : null,
+    Number(numQuestions)
   );
 
-  /* ───────── local ui state ───────── */
-  const [previewBlob,    setPreviewBlob]    = useState(null);
+  /* ───────── per-question ui state ───────── */
+  const [showInstr, setShowInstr] = useState(true); // shown once at start
+  const [readTimer, setReadTimer] = useState(READ_SEC);
+  const [recording, setRecording] = useState(false);
+  const [previewBlob, setPreviewBlob] = useState(null);
   const [previewMetrics, setPreviewMetrics] = useState(null);
 
-  const [showInstr,  setShowInstr]  = useState(true); // instruction dialog
-  const [readTimer,  setReadTimer]  = useState(READ_SEC);
-  const [recording,  setRecording]  = useState(false);
-
-  const prevQRef = useRef(-1);
-
-  /* ───────── reset per-question ui ───────── */
+  /* ───────── reset per-question timer when question index advances ───────── */
   useEffect(() => {
-    if (
-      session.current < session.questions.length &&
-      session.current !== prevQRef.current
-    ) {
-      prevQRef.current = session.current;
-      setShowInstr(true);      // show instructions again
+    if (session.questions.length > 0 && session.current < session.questions.length) {
+      // Clean per-question reset for Question 1, Question 2, etc.
+      setReadTimer(READ_SEC);
+      setRecording(false);
+      setPreviewBlob(null);
+      setPreviewMetrics(null);
     }
   }, [session.current, session.questions.length]);
 
-  /* ───────── countdown → recording ───────── */
+  /* ───────── prep countdown timer effect ───────── */
   useEffect(() => {
-    if (showInstr) {
-      setReadTimer(READ_SEC);
-      setRecording(false);
-      return; // wait for user to close dialog
+    // Only count down if instructions modal is dismissed, not in preview modal, prep timer > 0, and not uploading
+    if (showInstr || previewBlob || recording || session.status === "uploading") return;
+
+    if (readTimer <= 0) {
+      setRecording(true);
+      return;
     }
 
-    const id = setInterval(() => {
+    const timerId = setInterval(() => {
       setReadTimer((prev) => {
         if (prev <= 1) {
-          clearInterval(id);
-          setRecording(true); // auto-start recording
+          clearInterval(timerId);
+          setRecording(true); // auto-start recording when prep expires
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(id);
-  }, [showInstr]);
+    return () => clearInterval(timerId);
+  }, [showInstr, previewBlob, recording, readTimer]);
 
   /* ───────── navigate once summary ready ───────── */
   useEffect(() => {
     if (session.status === "done") {
-      navigate("/profile/interviews");
+      if (session.interviewId) {
+        navigate(`/mockinterview/${session.interviewId}`);
+      } else {
+        navigate("/profile/interviews");
+      }
     }
-  }, [session.status, navigate]);
+  }, [session.status, session.interviewId, navigate]);
 
   /* ───────── early states ───────── */
   if (!decodedCompany) return <CompanyPicker />;
@@ -92,10 +98,10 @@ export default function AIInterviewPage() {
     return (
       <>
         <div className="max-w-lg mx-auto px-6 py-16 text-center">
-          <h1 className="text-3xl font-bold mb-4 text-blue-800">
+          <h1 className="text-3xl font-bold mb-4 text-blue-800 dark:text-blue-300">
             {decodedCompany} Mock Interview
           </h1>
-          <p className="mb-8 text-gray-700">
+          <p className="mb-8 text-gray-700 dark:text-gray-300">
             Please log in or sign up to start your AI-powered mock interview.
           </p>
           <button
@@ -126,8 +132,8 @@ export default function AIInterviewPage() {
 
   if (session.status === "error") {
     return (
-      <div className="text-center py-20 text-red-600">
-        Something went wrong while contacting the server.
+      <div className="text-center py-20 text-red-600 dark:text-red-400">
+        Something went wrong while connecting to the mock interview server.
         <br />
         Please try again later.
       </div>
@@ -136,63 +142,65 @@ export default function AIInterviewPage() {
 
   if (session.questions.length === 0) {
     return (
-      <div className="flex h-40 items-center justify-center text-gray-600">
-        Loading questions…
+      <div className="flex h-40 items-center justify-center text-gray-600 dark:text-gray-400">
+        Loading interview questions…
       </div>
     );
   }
 
-  /* ───────── after last upload, wait for summary ───────── */
+  /* ───────── after last question submitted, wait for async results ───────── */
   if (session.current >= session.questions.length) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4 px-4">
         <span className="loader mb-4" />
-        <h2 className="text-2xl font-semibold text-blue-700">
-          Interview submitted!
+        <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+          Interview Complete!
         </h2>
-        <p className="text-gray-600">
-          Our AI is analysing your answers.
+        <p className="text-gray-600 dark:text-gray-400 max-w-md">
+          Our AI is evaluating your speech fluency, content delivery, and technical answers.
           <br />
-          You’ll be redirected when the summary is ready.
+          You will be redirected automatically to your detailed feedback report shortly.
         </p>
       </div>
     );
   }
 
-  /* ───────── main render ───────── */
+  /* ───────── main interview screen ───────── */
   const currentQ = session.questions[session.current];
+
+  const handleStartRecordingEarly = () => {
+    setReadTimer(0);
+    setRecording(true);
+  };
 
   return (
     <>
-      {/* instruction dialog */}
+      {/* Initial instruction dialog (shown once before Question 1) */}
       <InstructionDialog
-      open={showInstr}
-      onClose={() => setShowInstr(false)}
-      totalQ={session.questions.length}
-      current={session.current}
-      />  
+        open={showInstr}
+        onClose={() => setShowInstr(false)}
+        totalQ={session.questions.length}
+        current={0}
+      />
 
-      {/* inter-question overlay */}
-      {session.movingToNext && (
-        <div className="fixed inset-0 bg-white/70 backdrop-blur-sm z-50 flex flex-col items-center justify-center space-y-4">
-          <span className="loader" />
-          <p className="text-lg font-medium text-gray-700">
-            Processing your answer…
-          </p>
-        </div>
-      )}
-
-      <div className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* Left: Question Card with Prep Timer */}
         <QuestionCard
           question={currentQ}
           index={session.current}
           total={session.questions.length}
-          readTimer={recording ? 0 : readTimer}
+          readTimer={readTimer}
+          isRecording={recording}
+          onStartEarly={readTimer > 0 ? handleStartRecordingEarly : null}
         />
 
+        {/* Right: Camera Stream & Recorder Panel */}
         <RecorderPanel
           recording={recording}
           maxSec={ANSWER_SEC}
+          isPrep={readTimer > 0 && !recording}
+          prepTimer={readTimer}
+          onStartManual={handleStartRecordingEarly}
           onPreview={(blob, metrics) => {
             setRecording(false);
             setPreviewBlob(blob);
@@ -201,17 +209,24 @@ export default function AIInterviewPage() {
         />
       </div>
 
+      {/* Review Modal before submission */}
       <VideoPreviewModal
         blob={previewBlob}
+        metrics={previewMetrics}
         open={!!previewBlob}
         onClose={() => {
+          // Re-record option
           setPreviewBlob(null);
           setPreviewMetrics(null);
+          setReadTimer(0);
+          setRecording(true);
         }}
-        onSubmit={() => {
-          session.submitAnswer(previewBlob, previewMetrics);
+        onSubmit={(payload) => {
+          session.submitAnswer(payload);
           setPreviewBlob(null);
           setPreviewMetrics(null);
+          setReadTimer(READ_SEC);
+          setRecording(false);
         }}
         loading={session.status === "uploading"}
       />

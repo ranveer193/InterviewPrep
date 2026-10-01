@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { cachedGet } from "../services/api";
 import HeroBanner from "../components/HeroBanner";
 import CompanyCard from "../components/CompanyCard";
 
@@ -10,9 +10,9 @@ export default function Interview() {
   const [sortBy, setSortBy] = useState("latest");
   const [searchText, setSearchText] = useState("");
   const [page] = useState(1);
-  const [limit] = useState(1000); // Increase if necessary
+  const [limit] = useState(1000);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const params = new URLSearchParams({
         sort: sortBy,
@@ -20,21 +20,21 @@ export default function Interview() {
         limit,
       }).toString();
 
-      const res = await axios.get(`https://interviewprep-backend-5os4.onrender.com/interview?${params}`);
-      const rows = Array.isArray(res.data) ? res.data : res.data.data;
+      const res = await cachedGet(`/interview?${params}`);
+      const rows = Array.isArray(res.data) ? res.data : res.data?.data || [];
 
       setExperiences(rows);
       setCompanies([...new Set(rows.map((item) => item.company.trim()))]);
     } catch (error) {
       console.error("Error fetching experiences:", error);
     }
-  };
+  }, [sortBy, page, limit]);
 
   useEffect(() => {
     fetchData();
-  }, [sortBy]);
+  }, [fetchData]);
 
-  const groupExperiencesByCompany = () => {
+  const companyData = useMemo(() => {
     const grouped = {};
 
     experiences.forEach((exp) => {
@@ -61,19 +61,31 @@ export default function Interview() {
       averageUpvotes: companyData.totalUpvotes / companyData.experiences.length,
       roles: Array.from(companyData.roles),
     }));
-  };
+  }, [experiences]);
 
-  const companyData = groupExperiencesByCompany();
+  const filteredCompanyData = useMemo(() => {
+    return companyData.filter((company) => {
+      const matchesCompany =
+        activeFilter === "All Companies" || company.company === activeFilter;
+      const matchesSearch = company.company
+        .toLowerCase()
+        .includes(searchText.toLowerCase());
 
-  const filteredCompanyData = companyData.filter((company) => {
-    const matchesCompany =
-      activeFilter === "All Companies" || company.company === activeFilter;
-    const matchesSearch = company.company
-      .toLowerCase()
-      .includes(searchText.toLowerCase());
+      return matchesCompany && matchesSearch;
+    });
+  }, [companyData, activeFilter, searchText]);
 
-    return matchesCompany && matchesSearch;
-  });
+  const handleFilterChange = useCallback((comp) => {
+    setActiveFilter(comp);
+  }, []);
+
+  const handleSortChange = useCallback((e) => {
+    setSortBy(e.target.value);
+  }, []);
+
+  const handleSearchChange = useCallback((e) => {
+    setSearchText(e.target.value);
+  }, []);
 
   return (
     <div>
@@ -83,7 +95,6 @@ export default function Interview() {
       />
 
       <div className="px-4 max-w-6xl mx-auto py-8">
-
         <h2 className="text-2xl font-semibold text-blue-900 mb-1">Companies</h2>
         <p className="text-sm text-blue-700 mb-5">
           Real experiences from real candidates grouped by company
@@ -95,7 +106,7 @@ export default function Interview() {
             type="text"
             placeholder="Search by company name..."
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={handleSearchChange}
             className="w-full p-4 pl-12 rounded-full border border-blue-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white transition-all duration-200"
           />
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -120,7 +131,7 @@ export default function Interview() {
           {["All Companies", ...companies].map((comp) => (
             <button
               key={comp}
-              onClick={() => setActiveFilter(comp)}
+              onClick={() => handleFilterChange(comp)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium ${
                 activeFilter === comp
                   ? "bg-blue-600 text-white"
@@ -137,7 +148,7 @@ export default function Interview() {
           <label className="text-sm text-blue-800 font-medium">Sort by:</label>
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            onChange={handleSortChange}
             className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="latest">Latest</option>

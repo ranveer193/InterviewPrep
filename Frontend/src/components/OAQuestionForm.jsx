@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "../services/api";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -61,7 +61,7 @@ export default function OAQuestionForm({ onClose, isAnonymous }) {
       const classified = await Promise.all(
         questions.map(async (q) => {
           try {
-            const { data } = await axios.post("https://interviewprep-backend-5os4.onrender.com/ai/classify", {
+            const { data } = await api.post("/ai/classify", {
               question: q.question,
             });
             return { ...q, difficulty: data.difficulty || "" };
@@ -72,7 +72,7 @@ export default function OAQuestionForm({ onClose, isAnonymous }) {
       );
 
       /* ---------- 2. save to OA bulk route ---------- */
-      await axios.post("https://interviewprep-backend-5os4.onrender.com/oa/bulk", {
+      await api.post("/oa/bulk", {
         company,
         role,
         year: Number(year),

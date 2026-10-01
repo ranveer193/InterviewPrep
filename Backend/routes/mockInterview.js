@@ -1,9 +1,10 @@
-const express      = require("express");
-const verifyToken  = require("../middleware/verifyToken");
-const upload       = require("../middleware/multerConfig");
+const express = require("express");
+const verifyToken = require("../middleware/verifyToken");
+const upload = require("../middleware/multerConfig");
 
 const {
   createMockInterview,
+  submitAnswer,
   transcribeVideo,
   analyzeTranscript,
   getInterviewResult,
@@ -58,6 +59,8 @@ router.get("/leaderboard/top", async (req, res) => {
 
 router.get("/:id/status", verifyToken, getInterviewStatus);
 
+router.post("/:id/submitAnswer", verifyToken, submitAnswer);
+
 router.post(
   "/:id/transcribe",
   verifyToken,
@@ -66,13 +69,15 @@ router.post(
 );
 
 router.post("/:id/analyze", verifyToken, analyzeTranscript);
-router.get("/:id/result",  verifyToken, getInterviewResult);
+router.get("/:id/result", verifyToken, getInterviewResult);
 
 // ✅ Get single interview summary
 router.get("/:id", verifyToken, async (req, res) => {
   try {
     const interview = await MockInterview.findById(req.params.id);
-    if (!interview || interview.userId !== req.user.uid) return res.status(403).json({ error: "Unauthorized" });
+    if (!interview || (interview.userId && interview.userId !== "anonymous" && interview.userId !== req.user.uid)) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
     res.json({ interview });
   } catch (err) {
     console.error("[GET /:id]", err);
@@ -84,7 +89,9 @@ router.get("/:id", verifyToken, async (req, res) => {
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const interview = await MockInterview.findById(req.params.id);
-    if (!interview || interview.userId !== req.user.uid) return res.status(403).json({ error: "Unauthorized" });
+    if (!interview || (interview.userId && interview.userId !== "anonymous" && interview.userId !== req.user.uid)) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
     await interview.deleteOne();
     res.json({ success: true });
   } catch (err) {

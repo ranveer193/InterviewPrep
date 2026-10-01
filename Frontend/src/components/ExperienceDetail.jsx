@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import axios from "axios";
 import { ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
 import {
   FaThumbsUp,
@@ -12,8 +11,10 @@ import {
   FaGraduationCap,
   FaRegStickyNote,
 } from "react-icons/fa";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import { toast } from "react-toastify";
+import api from "../services/api";
+import { auth } from "../firebase";
 
 export default function ExperienceDetail() {
   const { id } = useParams();
@@ -23,8 +24,6 @@ export default function ExperienceDetail() {
   const [isUpvoted, setIsUpvoted] = useState(false);
   const [user, setUser] = useState(null);
 
-  const auth = getAuth();
-
   /* ─── auth track ───────────────────────── */
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => setUser(u));
@@ -33,8 +32,8 @@ export default function ExperienceDetail() {
 
   /* ─── fetch experience ─────────────────── */
   useEffect(() => {
-    axios
-      .get(`https://interviewprep-backend-5os4.onrender.com/interview/${id}`)
+    api
+      .get(`/interview/${id}`)
       .then((res) => {
         const exp = res.data;
         setExperience(exp);
@@ -51,12 +50,7 @@ export default function ExperienceDetail() {
       return;
     }
     try {
-      const token = await user.getIdToken();
-      const res = await axios.patch(
-        `https://interviewprep-backend-5os4.onrender.com/interview/${id}/upvote`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await api.patch(`/interview/${id}/upvote`, {});
       setUpvotes(res.data.upvotes);
       setIsUpvoted(res.data.upvoted);
       toast.success(

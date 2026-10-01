@@ -4,6 +4,9 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const fs = require("fs");
 const path = require("path");
+const dns = require("dns");
+
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 dotenv.config();
 

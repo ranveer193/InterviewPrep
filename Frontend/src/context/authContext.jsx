@@ -6,16 +6,15 @@ import {
   useState,
 } from "react";
 import {
-  getAuth,
   onIdTokenChanged,
   signOut,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
-  /* ★ NEW ↓ */
   setPersistence,
   browserSessionPersistence,
 } from "firebase/auth";
+import { auth } from "../firebase";
 
 /* ------------------------------------------------------------------ */
 /* Blueprint                                                          */
@@ -33,7 +32,6 @@ const AuthContext = createContext({
 /* Provider                                                           */
 /* ------------------------------------------------------------------ */
 export function AuthProvider({ children }) {
-  const auth = getAuth();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 

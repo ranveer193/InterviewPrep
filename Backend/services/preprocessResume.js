@@ -7,7 +7,7 @@ const FormData = require("form-data");
 const mime = require("mime-types");
 
 async function preprocessResume(filePath) {
-  const buf = fs.readFileSync(filePath);
+  const buf = await fs.promises.readFile(filePath);
   const mimeType = mime.lookup(filePath); // e.g., "application/pdf", "image/png"
 
   // 🧾 PDF parsing

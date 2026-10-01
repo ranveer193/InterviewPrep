@@ -1,7 +1,8 @@
 import { FaThumbsUp, FaUsers, FaChartLine } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { memo } from "react";
 
-export default function CompanyCard({ companyData }) {
+function CompanyCard({ companyData }) {
   const navigate = useNavigate();
   
   const {
@@ -88,4 +89,6 @@ export default function CompanyCard({ companyData }) {
       </div>
     </div>
   );
-} 
+}
+
+export default memo(CompanyCard);

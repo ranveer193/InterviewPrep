@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
-import axios from "axios";
+import { cachedGet } from "../services/api";
 import { ChevronDown, ChevronRight, ArrowLeft } from "lucide-react";
 
 /**
@@ -29,12 +29,12 @@ export default function OACompanyWise() {
   const fetchQuestions = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const url =
+    const path =
       difficultyFilter === "All"
-        ? `https://interviewprep-backend-5os4.onrender.com/oa/${encodeURIComponent(companyName)}`
-        : `https://interviewprep-backend-5os4.onrender.com/oa/${encodeURIComponent(companyName)}?difficulty=${difficultyFilter}`;
+        ? `/oa/${encodeURIComponent(companyName)}`
+        : `/oa/${encodeURIComponent(companyName)}?difficulty=${difficultyFilter}`;
     try {
-      const { data } = await axios.get(url);
+      const { data } = await cachedGet(path);
       setRaw(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err.message ?? "Something went wrong");
