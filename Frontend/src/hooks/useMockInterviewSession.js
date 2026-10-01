@@ -64,6 +64,9 @@ export default function useMockInterviewSession(company, numQuestions = 2) {
         return next;
       });
 
+      // Advance to next question immediately - NO LAG for the candidate!
+      setCurrent((p) => p + 1);
+
       try {
         const blob = payload?.blob || payload;
         const transcript = payload?.transcript || "";
@@ -90,9 +93,6 @@ export default function useMockInterviewSession(company, numQuestions = 2) {
             audioDurationSeconds,
           });
         }
-
-        // Advance to next question immediately - NO LAG for the candidate!
-        setCurrent((p) => p + 1);
       } catch (err) {
         console.error("[useMockInterview] submission error:", err);
         setStatus("error");

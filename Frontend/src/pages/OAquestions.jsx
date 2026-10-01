@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus } from "lucide-react";
+import useSWR from "swr";
 import Modal from "../components/Modal";
 import OAQuestionForm from "../components/OAQuestionForm";
-import { cachedGet } from "../services/api";
+import api from "../services/api";
 
 import "react-toastify/dist/ReactToastify.css";
 
@@ -11,10 +12,9 @@ import Login from "./Auth/Login";
 import SignUp from "./Auth/SignUp";
 import { useAuth } from "../context/authContext";
 
+const fetcher = (url) => api.get(url).then((r) => r.data);
+
 export default function OAquestions() {
-  const [companyList, setCompanyList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [activeFilter, setActiveFilter] = useState("All Companies");
 
@@ -25,21 +25,7 @@ export default function OAquestions() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const fetchCompanies = useCallback(async () => {
-    try {
-      const res = await cachedGet("/oa/companies");
-      setCompanyList(res.data);
-    } catch (err) {
-      setError(err.message ?? "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  /* fetch list */
-  useEffect(() => {
-    fetchCompanies();
-  }, [fetchCompanies]);
+  const { data: companyList = [], isLoading, error, mutate } = useSWR("/oa/companies", fetcher);
 
   const handleAddClick = () => (user ? setFormOpen(true) : setAuthOpen(true));
 
@@ -68,17 +54,13 @@ export default function OAquestions() {
         isOpen={formOpen}
         onClose={() => {
           setFormOpen(false);
-          cachedGet("/oa/companies")
-            .then((res) => setCompanyList(res.data))
-            .catch(() => {});
+          mutate(); // SWR revalidate
         }}
       >
         <OAQuestionForm
           onClose={() => {
             setFormOpen(false);
-            cachedGet("/oa/companies")
-              .then((res) => setCompanyList(res.data))
-              .catch(() => {});
+            mutate(); // SWR revalidate
           }}
           isAnonymous={false}
         />
@@ -170,10 +152,10 @@ export default function OAquestions() {
       </div>
 
       {/* list */}
-      {loading ? (
+      {isLoading ? (
         <p className="text-center text-gray-500">Loading…</p>
       ) : error ? (
-        <p className="text-center text-red-600">{error}</p>
+        <p className="text-center text-red-600">{error.message ?? "Something went wrong"}</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.length ? (

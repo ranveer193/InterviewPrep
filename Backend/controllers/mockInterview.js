@@ -159,7 +159,7 @@ Rating:
         const raw = (await askLLM(prompt)) || "";
         console.log(`[${ts()}] 🤖 LLM evaluation output received for Q${index}`);
 
-        const ratingMatch = raw.match(/Rating:\s*([0-5](?:\.\d+)?)(?=\s*\/\s*5)/i);
+        const ratingMatch = raw.match(/Rating.*?([0-5](?:\.\d+)?)/i);
         const rating = ratingMatch ? parseFloat(ratingMatch[1]) : 3.0;
         const summary = raw.replace(/Rating:[\s\S]*/i, "").trim();
 
@@ -269,7 +269,7 @@ Rating:
 `.trim();
 
         const raw = (await askLLM(prompt)) || "";
-        const ratingMatch = raw.match(/Rating:\s*([0-5](?:\.\d+)?)(?=\s*\/\s*5)/i);
+        const ratingMatch = raw.match(/Rating.*?([0-5](?:\.\d+)?)/i);
         const rating = ratingMatch ? parseFloat(ratingMatch[1]) : 3.0;
         const summary = raw.replace(/Rating:[\s\S]*/i, "").trim();
 

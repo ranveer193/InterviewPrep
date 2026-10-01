@@ -1,55 +1,28 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState, useCallback } from "react";
-import { cachedGet } from "../services/api";
+import { useState, useMemo } from "react";
+import useSWR from "swr";
+import api from "../services/api";
 import { ChevronDown, ChevronRight, ArrowLeft } from "lucide-react";
 
-/**
- * OACompanyWise – shows all OA questions for a given company
- * -----------------------------------------------------------
- * UX improvements:
- *  - single unified filter bar (role + difficulty)
- *  - proper cleanup of duplicated JSX / closing tags
- *  - graceful loading / no‑data states
- *  - resets open accordions when filters change
- */
+const fetcher = (url) => api.get(url).then((r) => r.data);
+
 export default function OACompanyWise() {
   const { companyName } = useParams();
   const navigate = useNavigate();
 
-  /* --------------------------- state --------------------------- */
-  const [raw, setRaw] = useState([]); // original list from backend
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [roleFilter, setRoleFilter] = useState("All"); // Internship | Placement | All
-  const [difficultyFilter, setDifficultyFilter] = useState("All"); // Easy | Medium | Hard | All
+  const [roleFilter, setRoleFilter] = useState("All");
+  const [difficultyFilter, setDifficultyFilter] = useState("All");
   const [openYear, setOpenYear] = useState(null);
   const [openQuestion, setOpenQuestion] = useState({});
 
-  /* --------------------------- helpers --------------------------- */
-  const fetchQuestions = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    const path =
-      difficultyFilter === "All"
-        ? `/oa/${encodeURIComponent(companyName)}`
-        : `/oa/${encodeURIComponent(companyName)}?difficulty=${difficultyFilter}`;
-    try {
-      const { data } = await cachedGet(path);
-      setRaw(Array.isArray(data) ? data : []);
-    } catch (err) {
-      setError(err.message ?? "Something went wrong");
-    } finally {
-      setLoading(false);
-      // reset open accordions when new data arrives
-      setOpenYear(null);
-      setOpenQuestion({});
-    }
+  const path = useMemo(() => {
+    const base = `/oa/${encodeURIComponent(companyName)}`;
+    return difficultyFilter === "All" ? base : `${base}?difficulty=${difficultyFilter}`;
   }, [companyName, difficultyFilter]);
 
-  /* fetch on mount & whenever filters change */
-  useEffect(() => {
-    fetchQuestions();
-  }, [fetchQuestions]);
+  const { data, isLoading, error } = useSWR(path, fetcher);
+
+  const raw = useMemo(() => Array.isArray(data) ? data : [], [data]);
 
   /* ------------------------ derived state ------------------------ */
   const filtered = raw.filter((q) =>
@@ -114,10 +87,10 @@ export default function OACompanyWise() {
       </div>
 
       {/* List */}
-      {loading ? (
+      {isLoading ? (
         <p className="text-center text-gray-500">Loading…</p>
       ) : error ? (
-        <p className="text-center text-red-600">{error}</p>
+        <p className="text-center text-red-600">{error.message ?? "Something went wrong"}</p>
       ) : Object.keys(questionsByYear).length === 0 ? (
         <p className="text-center text-gray-500">
           No questions match the selected filters.

@@ -39,7 +39,7 @@ api.interceptors.request.use(async (config) => {
 // ⚡ Session storage cache helper for GET requests
 const CACHE_PREFIX = "ip_cache_";
 
-export async function cachedGet(url, options = {}, ttlMs = 5 * 60 * 1000) {
+export async function cachedGet(url, options = {}, ttlMs = 1 * 60 * 1000) {
   const cacheKey = CACHE_PREFIX + url;
 
   if (typeof window !== "undefined" && window.sessionStorage) {

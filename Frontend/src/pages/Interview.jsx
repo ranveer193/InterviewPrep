@@ -1,38 +1,30 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
-import { cachedGet } from "../services/api";
+import { useState, useMemo } from "react";
+import useSWR from "swr";
+import api from "../services/api";
 import HeroBanner from "../components/HeroBanner";
 import CompanyCard from "../components/CompanyCard";
 
+const fetcher = (url) => api.get(url).then((r) => r.data);
+
 export default function Interview() {
-  const [experiences, setExperiences] = useState([]);
-  const [companies, setCompanies] = useState([]);
   const [activeFilter, setActiveFilter] = useState("All Companies");
   const [sortBy, setSortBy] = useState("latest");
   const [searchText, setSearchText] = useState("");
-  const [page] = useState(1);
-  const [limit] = useState(1000);
 
-  const fetchData = useCallback(async () => {
-    try {
-      const params = new URLSearchParams({
-        sort: sortBy,
-        page,
-        limit,
-      }).toString();
+  const { data, isLoading } = useSWR(
+    `/interview?sort=${sortBy}&page=1&limit=1000`,
+    fetcher
+  );
 
-      const res = await cachedGet(`/interview?${params}`);
-      const rows = Array.isArray(res.data) ? res.data : res.data?.data || [];
+  const experiences = useMemo(() => {
+    const rows = Array.isArray(data) ? data : data?.data || [];
+    return rows;
+  }, [data]);
 
-      setExperiences(rows);
-      setCompanies([...new Set(rows.map((item) => item.company.trim()))]);
-    } catch (error) {
-      console.error("Error fetching experiences:", error);
-    }
-  }, [sortBy, page, limit]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const companies = useMemo(
+    () => [...new Set(experiences.map((e) => e.company.trim()))],
+    [experiences]
+  );
 
   const companyData = useMemo(() => {
     const grouped = {};

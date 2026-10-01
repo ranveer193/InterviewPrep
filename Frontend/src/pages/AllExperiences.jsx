@@ -1,19 +1,20 @@
-import { useEffect, useState, useCallback } from "react";
-import { cachedGet } from "../services/api";
+import { useState, useCallback, useMemo } from "react";
+import useSWR from "swr";
+import api from "../services/api";
 import HeroBanner from "../components/HeroBanner";
 import ExperienceCard from "../components/ExperienceCard";
 import SearchFilters from "../components/FilterTabs";
 import DifficultyFilter from "../components/DifficultyFilter";
 
+const fetcher = (url) => api.get(url).then((res) => res.data);
+
 export default function Home() {
-  const [experiences, setExperiences] = useState([]);
   const [filter, setFilter] = useState({ company: "", role: "", difficulty: "" });
   const [sortBy, setSortBy] = useState("latest");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(6);
-  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchExperiences = useCallback(async () => {
+  const queryString = useMemo(() => {
     const params = new URLSearchParams();
     if (filter.company) params.append("company", filter.company);
     if (filter.role) params.append("role", filter.role);
@@ -21,19 +22,13 @@ export default function Home() {
     params.append("sort", sortBy);
     params.append("page", page);
     params.append("limit", pageSize);
-
-    try {
-      const res = await cachedGet(`/interview?${params.toString()}`);
-      setExperiences(res.data.data || []);
-      setTotalPages(res.data.totalPages || 1);
-    } catch (err) {
-      console.error("Failed to fetch experiences", err);
-    }
+    return params.toString();
   }, [filter, sortBy, page, pageSize]);
 
-  useEffect(() => {
-    fetchExperiences();
-  }, [fetchExperiences]);
+  const { data, error, isLoading } = useSWR(`/interview?${queryString}`, fetcher);
+
+  const experiences = data?.data || [];
+  const totalPages = data?.totalPages || 1;
 
   const handlePrev = useCallback(() => setPage((p) => Math.max(p - 1, 1)), []);
   const handleNext = useCallback(() => setPage((p) => Math.min(p + 1, totalPages)), [totalPages]);
@@ -65,7 +60,11 @@ export default function Home() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {experiences.length ? (
+          {isLoading ? (
+            <p className="text-center text-gray-500 col-span-full">Loading experiences...</p>
+          ) : error ? (
+            <p className="text-center text-red-500 col-span-full">Failed to load experiences.</p>
+          ) : experiences.length ? (
             experiences.map((exp) => <ExperienceCard key={exp._id} exp={exp} />)
           ) : (
             <p className="text-center text-gray-500 col-span-full">No experiences found.</p>

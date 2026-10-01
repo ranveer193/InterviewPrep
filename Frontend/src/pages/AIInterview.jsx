@@ -44,22 +44,31 @@ export default function AIInterviewPage() {
   const [recording, setRecording] = useState(false);
   const [previewBlob, setPreviewBlob] = useState(null);
   const [previewMetrics, setPreviewMetrics] = useState(null);
+  const [transitioning, setTransitioning] = useState(false); // brief "Get Ready" between questions
 
   /* ───────── reset per-question timer when question index advances ───────── */
   useEffect(() => {
     if (session.questions.length > 0 && session.current < session.questions.length) {
-      // Clean per-question reset for Question 1, Question 2, etc.
-      setReadTimer(READ_SEC);
+      // Show a short transition screen so all state resets cleanly
+      // before the timer effect can run
+      setTransitioning(true);
       setRecording(false);
       setPreviewBlob(null);
       setPreviewMetrics(null);
+
+      const t = setTimeout(() => {
+        setReadTimer(READ_SEC);   // only set timer AFTER transitioning is shown
+        setTransitioning(false);
+      }, 800); // 800ms "Next Question" screen — enough for React to settle
+
+      return () => clearTimeout(t);
     }
   }, [session.current, session.questions.length]);
 
   /* ───────── prep countdown timer effect ───────── */
   useEffect(() => {
-    // Only count down if instructions modal is dismissed, not in preview modal, prep timer > 0, and not uploading
-    if (showInstr || previewBlob || recording || session.status === "uploading") return;
+    // Don't tick during instructions, preview, recording, upload, or transition
+    if (showInstr || previewBlob || recording || session.status === "uploading" || transitioning) return;
 
     if (readTimer <= 0) {
       setRecording(true);
@@ -70,7 +79,7 @@ export default function AIInterviewPage() {
       setReadTimer((prev) => {
         if (prev <= 1) {
           clearInterval(timerId);
-          setRecording(true); // auto-start recording when prep expires
+          setRecording(true);
           return 0;
         }
         return prev - 1;
@@ -78,7 +87,7 @@ export default function AIInterviewPage() {
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [showInstr, previewBlob, recording, readTimer]);
+  }, [showInstr, previewBlob, recording, readTimer, transitioning]);
 
   /* ───────── navigate once summary ready ───────── */
   useEffect(() => {
@@ -160,6 +169,21 @@ export default function AIInterviewPage() {
           Our AI is evaluating your speech fluency, content delivery, and technical answers.
           <br />
           You will be redirected automatically to your detailed feedback report shortly.
+        </p>
+      </div>
+    );
+  }
+
+  /* ───────── between-question transition screen ───────── */
+  if (transitioning) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4 px-4">
+        <div className="text-5xl">⏳</div>
+        <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+          Get Ready for Question {session.current + 1}
+        </h2>
+        <p className="text-gray-500 dark:text-gray-400">
+          Next question loading — prepare yourself!
         </p>
       </div>
     );

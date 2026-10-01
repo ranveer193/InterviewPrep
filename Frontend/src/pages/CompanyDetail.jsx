@@ -1,66 +1,38 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { cachedGet } from "../services/api";
+import useSWR from "swr";
+import api from "../services/api";
 import HeroBanner from "../components/HeroBanner";
 import ExperienceCard from "../components/ExperienceCard";
 import { FaArrowLeft, FaUsers, FaThumbsUp, FaChartLine } from "react-icons/fa";
 
+const fetcher = (url) => api.get(url).then((r) => r.data);
+
 export default function CompanyDetail() {
   const { companyName } = useParams();
 
-  const [experiences, setExperiences] = useState([]);
-  const [companyStats, setCompanyStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-
   const [sortBy, setSortBy] = useState("latest");
   const [difficultyFilter, setDifficultyFilter] = useState("All");
-
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(6);
-  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchCompanyExperiences = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        company: companyName,
-        sort: sortBy,
-        page,
-        limit: pageSize,
-      });
-      if (difficultyFilter !== "All") params.append("difficulty", difficultyFilter);
-
-      const res = await cachedGet(`/interview?${params.toString()}`);
-      const rows = res.data?.data || [];
-      setExperiences(rows);
-      setTotalPages(res.data?.totalPages || 1);
-    } catch (err) {
-      console.error("Error fetching company experiences:", err);
-      setExperiences([]);
-    } finally {
-      setLoading(false);
-    }
+  const queryString = useMemo(() => {
+    const params = new URLSearchParams({ company: companyName, sort: sortBy, page, limit: pageSize });
+    if (difficultyFilter !== "All") params.append("difficulty", difficultyFilter);
+    return params.toString();
   }, [companyName, sortBy, page, pageSize, difficultyFilter]);
 
-  useEffect(() => {
-    fetchCompanyExperiences();
-  }, [fetchCompanyExperiences]);
+  const { data, isLoading, error } = useSWR(`/interview?${queryString}`, fetcher);
 
-  useEffect(() => {
-    if (!experiences.length) return setCompanyStats(null);
+  const experiences = data?.data || [];
+  const totalPages = data?.totalPages || 1;
 
+  const companyStats = useMemo(() => {
+    if (!experiences.length) return null;
     const totalUpvotes = experiences.reduce((s, r) => s + (r.upvotes || 0), 0);
     const roles = [...new Set(experiences.map(r => r.roleApplied || r.role).filter(Boolean))];
     const difficulties = [...new Set(experiences.map(r => r.difficulty).filter(Boolean))];
-
-    setCompanyStats({
-      company: companyName,
-      experienceCount: experiences.length,
-      totalUpvotes,
-      averageUpvotes: totalUpvotes / experiences.length,
-      roles,
-      difficulties,
-    });
+    return { company: companyName, experienceCount: experiences.length, totalUpvotes, averageUpvotes: totalUpvotes / experiences.length, roles, difficulties };
   }, [experiences, companyName]);
 
   const handleUpvote = updatedExp => {
@@ -69,7 +41,7 @@ export default function CompanyDetail() {
     );
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-blue-600 text-lg">Loading...</div>
